@@ -9,5 +9,5 @@ window.PASSERELLE_CONFIG = {
   google: false, // passe à true une fois Google activé dans Supabase (Authentication → Sign In / Providers)
   // Adresse principale du jeu : toute autre adresse *.netlify.app y renvoie (chaque adresse a sa propre mémoire,
   // donc son propre joueur). Laisser vide tant que le projet Netlify relié à GitHub n'a pas ce nom.
-  siteUrl: '',
+  siteUrl: 'https://passerelle-game.netlify.app',
 };

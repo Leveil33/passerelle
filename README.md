@@ -4,6 +4,7 @@ Jeu de stratégie à deux, en 3D : traverse le plateau avant ton adversaire.
 
 **Jouer : https://passerelle-game.netlify.app/**
 
+- Adresse unique : https://passerelle-game.netlify.app (`siteUrl` dans `site/config.js`).
 - En local à deux, contre un bot (entraînement), en compétition, ou **en ligne**, chacun sur son appareil.
 - Compétition en ligne : recherche d'adversaire automatique ou défi à un ami, pendule partagée, **classement Elo** dans le jeu.
 - Comptes personnalisables (plusieurs par personne), classement, emotes, météo, plusieurs univers.
