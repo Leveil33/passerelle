@@ -1,0 +1,22 @@
+const { chromium } = require('playwright'); const path = require('path');
+(async () => {
+  const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const errs = [], R = {};
+  const open = async (url, tag) => { const ctx = await b.newContext({ viewport: { width: 1000, height: 720 }, reducedMotion: 'reduce' }); const p = await ctx.newPage(); p.on('pageerror', (e) => errs.push(tag + ': ' + e.message)); await p.goto(url, { waitUntil: 'commit' }); await p.waitForSelector('#hOnline', { state: 'attached', timeout: 90000 }); await p.waitForTimeout(3000); return p; };
+  const A = await open('https://passerelle-game.netlify.app/', 'A');
+  R.welcome = await A.evaluate(() => !!document.querySelector('#welcome:not([hidden])') && getComputedStyle(document.querySelector('#welcome')).display !== 'none');
+  await A.keyboard.press('Escape'); await A.waitForTimeout(500);
+  await A.evaluate(() => { localStorage.setItem('denivele.welcome', '{"level":3}'); });
+  await A.evaluate(() => document.querySelector('#hOnline').click()); await A.waitForTimeout(3000);
+  R.status = await A.evaluate(() => (document.querySelector('#onBody .on-status, #onBody') || {}).textContent.trim().slice(0, 70));
+  await A.evaluate(() => document.querySelector('#onCreate').click()); await A.waitForTimeout(3000);
+  const code = (await A.textContent('.on-code')).trim(); R.code = code;
+  const B = await open('https://passerelle-game.netlify.app/?partie=' + code, 'B');
+  await B.keyboard.press('Escape').catch(() => {});
+  await A.waitForTimeout(8000);
+  R.screens = await Promise.all([A, B].map((p) => p.evaluate(() => ['#home', '#online', '#welcome'].map((s) => { const el = document.querySelector(s); return el && !el.hidden && getComputedStyle(el).display !== 'none' ? s : ''; }).join('') || 'jeu')));
+  R.info = await Promise.all([A, B].map((p) => p.evaluate(() => (document.querySelector('#onlineTag') || {}).textContent || '')));
+  await A.screenshot({ path: path.join(__dirname, 'L-A.png'), timeout: 120000 }); await B.screenshot({ path: path.join(__dirname, 'L-B.png'), timeout: 120000 });
+  R.sw = await A.evaluate(async () => (await navigator.serviceWorker.getRegistration()) ? 'ok' : 'non');
+  console.log(JSON.stringify({ ...R, errs }, null, 1)); await b.close();
+})();

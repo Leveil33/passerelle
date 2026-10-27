@@ -1,0 +1,10 @@
+# Construit tests/index.html : le jeu avec ses outils de test (window.__dbg) et three.js en local.
+import os
+T = os.path.dirname(os.path.abspath(__file__))
+s = open(os.path.join(T, '..', 'jeu', 'passerelle.html'), encoding='utf-8').read()
+s = s.replace('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', '../vendor/three.min.js')
+a = '/* ---------------- démarrage ---------------- */'
+assert s.count(a) == 1
+s = s.replace(a, "window.__dbg = { applyTheme, setStyle, music, TILE_MAT, hemi, sun, fill, LIGHTS, get tileMeshes(){return tileMeshes}, cam, opts, get style(){return style}, get builtShape(){return builtShape}, get compSaved(){return compSaved}, get mode(){return mode}, setMusic, startGame, goHome, captureShow, FATES, endReactions, celebrateVariant, showEnd, banner, applySkin, applyOpt, get G(){return G}, syncPieces, drawMarkers, simApply, botChoose, BOT_LEVELS, startTraining, simClone, genMoves, get musicEls(){return musicEls}, DEATHS, TRACKS, get decor(){return decor}, get actx(){return actx}, get master(){return master}, get pieceGroups(){return pieceGroups}, play, computeMoveSet, legalMoves, set selected(v){selected=v}, set moveSet(v){moveSet=v}, get busy(){return busy}, get mode(){return mode}, makeShape, PIECE_STYLES, showWelcome, sendEmote, accountRecordOnline, get ACC(){return ACC}, get ON(){return ON}, avatarSVG, emoteSVG, EMOTES, loadStep, get tutoState(){return tuto}, DEMO, stopTutoDemo, canAct, onlineRematch, get weather(){return weather}, setWeather, paintU, setStyle, shapeCache, setStyleDirect: (k, v) => { style[k] = v; }, get THREE(){return THREE}, flyoverTicker, decorRoot, scene, renderer, get camera(){return camera} };\n"+a)
+open(os.path.join(T, 'index.html'), 'w', encoding='utf-8').write('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script>if(!/welcome/.test(location.search))try{localStorage.setItem("denivele.welcome","{\\"level\\":3}")}catch(e){}</script>' + s)
+print('ok tests/index.html')
