@@ -12,6 +12,8 @@ create table if not exists public.docs (
 create index if not exists docs_coll on public.docs (coll);
 create index if not exists docs_party_p1 on public.docs ((data->>'p1')) where coll = 'parties';
 create index if not exists docs_party_p2 on public.docs ((data->>'p2')) where coll = 'parties';
+-- Recherche d'adversaire : les parties « en recherche » (data.mm = 'open').
+create index if not exists docs_party_mm on public.docs ((data->>'mm')) where coll = 'parties';
 
 -- Qui peut atteindre la table : seulement les joueurs connectés (même anonymes), jamais la clé seule.
 revoke all on table public.docs from anon, public;

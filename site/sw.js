@@ -1,5 +1,5 @@
 // Cache de l'appli : le jeu s'ouvre hors connexion. Le serveur Supabase n'est jamais mis en cache.
-const CACHE = 'passerelle-v7a7160aff6';
+const CACHE = 'passerelle-v619b422c49';
 const CORE = ['./', 'index.html', 'config.js', 'supabase-adapter.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting())); });

@@ -7,3 +7,5 @@
 - Ne jamais écraser `site/config.js` (clés du projet Supabase `rxfxukkbmocnaccpakbn`).
 - Tester avant de livrer (voir README) : `tests/comptes.js`, `tests/web-faux-serveur.js` ; `tests/web-vrai-serveur.js` écrit dans la vraie base (nettoyer ensuite les lignes de test).
 - Attention : le jeu a sa propre variable `history` ; utiliser `window.history`.
+- Compétition en ligne : parties `parties/<CODE>` avec `comp` (cadence), `ranked`, `e1/e2` (Elo au départ), `t` (ms passées) dans chaque coup, `flag` (camp tombé au temps) ; recherche d'adversaire = parties `mm: 'open'` avec battement `seen` (10 s). Elo dans le compte : `elo`, `rated`, `rw/rl/rd`, `eloPeak` (1200 au départ, K 40 puis 20 après 20 parties).
+- Chaque adresse du site a sa propre mémoire de navigateur (donc son propre joueur anonyme) : `site/config.js` → `siteUrl` fixe l'adresse principale ; les liens de déploiement Netlify y sont toujours renvoyés.

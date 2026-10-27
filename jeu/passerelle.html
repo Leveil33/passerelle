@@ -877,8 +877,44 @@ input[type="text"]:disabled{color:var(--ink);background:var(--wash)}
 
 .ac-cloud{display:grid;gap:10px;padding:16px;border-radius:16px;background:var(--wash);justify-items:start}
 .ac-cloud .on-h{margin:0}
+.ac-cloud.login{background:none;border:2px dashed var(--line)}
 .ac-cloud-row{display:flex;gap:8px;flex-wrap:wrap;width:100%}
 .ac-cloud-row input{flex:1 1 200px;min-width:0;font:600 15px/1.2 var(--font-body);padding:11px 14px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+
+/* Compétition en ligne : invitation, recherche d'adversaire, Elo */
+#start:not(.is-comp) .comp-online{display:none}
+.comp-online{display:grid;gap:12px}
+.comp-go{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cbig{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:4px;padding:16px 18px;border-radius:16px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.cbig b{font:600 18px/1.15 var(--font-display)}
+.cbig small{font:600 12px/1.3 var(--font-body);color:var(--mute)}
+.cbig.hot{background:var(--ink);border-color:var(--ink);color:#fff}
+.cbig.hot small{color:rgba(255,255,255,.72)}
+.cbig:hover{transform:translateY(-1px)}
+.cbig:focus-visible{outline:3px solid var(--p1,#ec6440);outline-offset:2px}
+.comp-elo{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:0}
+.comp-elo .av{width:26px;height:26px}
+.comp-local-k{margin-top:6px}
+.on-comp{margin:0 0 6px;font:600 13px/1.4 var(--font-body);color:var(--ink-soft)}
+.mm-radar{position:relative;justify-self:center;width:132px;height:132px;margin:6px auto 4px;display:grid;place-items:center}
+.mm-radar span{position:absolute;inset:0;border-radius:50%;border:2px solid var(--ink);opacity:0;animation:mmping 2.4s ease-out infinite}
+.mm-radar span:nth-child(2){animation-delay:.8s}.mm-radar span:nth-child(3){animation-delay:1.6s}
+.mm-radar .av{width:64px;height:64px}
+@keyframes mmping{0%{transform:scale(.45);opacity:.55}100%{transform:scale(1.15);opacity:0}}
+.mm-status{justify-self:center;justify-content:center;text-align:center}
+.mm-meta{justify-self:center;text-align:center;margin:0}
+.mm-pill{all:unset;box-sizing:border-box;cursor:pointer;position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:var(--ink);color:#fff;font:600 14px/1.2 var(--font-body);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.mm-pill[hidden]{display:none}
+.end-elo{margin:0;font:600 16px/1.3 var(--font-body);color:var(--ink-soft)}
+.end-elo .up{color:#1f9e6e}.end-elo .down{color:#d6283c}
+.board-tabs{margin-bottom:4px}
+.board-note{margin:0}
+.ac-board .pt small{font:600 11px/1 var(--font-body);color:var(--mute)}
+.ac-board li.top1 .rk{color:#d9a400}.ac-board li.top2 .rk{color:#8d97a6}.ac-board li.top3 .rk{color:#b76d43}
+.ac-board li.gap{background:none;justify-content:center;color:var(--mute)}
+.ac-stats .elo b{color:var(--ink)}
+@media (max-width:620px){.comp-go{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.mm-radar span{animation:none;opacity:.25}}
 </style>
 
 <div id="app">
@@ -972,6 +1008,7 @@ input[type="text"]:disabled{color:var(--ink);background:var(--wash)}
           <button class="hmin" id="hTuto"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l9-4 9 4-9 4z"/><path d="M7 10v5c2.5 2 7.5 2 10 0v-5"/></svg></span>Tutoriel</button>
           <button class="hmin" id="hStyle"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="9" r="1.6"/><circle cx="13" cy="7" r="1.6"/><circle cx="17" cy="11" r="1.6"/><path d="M12 21a9 9 0 1 1 9-9c0 2-1.5 3-3.5 3H16a2 2 0 0 0-1.4 3.4A2 2 0 0 1 12 21z"/></svg></span>Personnaliser</button>
           <button class="hmin" id="hScores"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V12h4v8zM10 20V6h4v14zM16 20v-5h4v5z"/></svg></span>Scores</button>
+          <button class="hmin" id="hBoard"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>Classement</button>
           <button class="hmin" id="hRules"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h6M9 8h3"/></svg></span>Règles</button>
         </div>
       </nav>
@@ -989,6 +1026,8 @@ input[type="text"]:disabled{color:var(--ink);background:var(--wash)}
   <div class="banner" id="banner" hidden aria-hidden="true"><small id="bannerSub"></small><b id="bannerText"></b></div>
 
   <button class="sound-hint" id="soundHint" hidden>♪ Touchez l’écran pour lancer la musique</button>
+
+  <button class="mm-pill" id="mmPill" hidden><span class="live"></span><span>Recherche d’un adversaire… <b id="mmPillTime">0:00</b></span></button>
 
   <button class="emote-btn" id="emoteBtn" hidden aria-expanded="false" aria-controls="emotePanel" title="Emotes" aria-label="Emotes"></button>
   <div class="card emote-panel" id="emotePanel" hidden></div>
@@ -1029,8 +1068,8 @@ input[type="text"]:disabled{color:var(--ink);background:var(--wash)}
 
   <div class="overlay" id="online" hidden>
     <div class="card sheet online-sheet">
-      <p class="eyebrow">En ligne · chacun sur son appareil</p>
-      <h1 style="font-size:clamp(34px,6vw,50px)">En ligne</h1>
+      <p class="eyebrow" id="onEyebrow">En ligne · chacun sur son appareil</p>
+      <h1 style="font-size:clamp(34px,6vw,50px)" id="onTitle">En ligne</h1>
       <div id="onBody"></div>
       <div class="row"><button class="btn ghost" id="onBack">← Accueil</button></div>
       <p class="fine">Chacun garde son univers et ses couleurs : seuls le relief et les coups sont partagés.</p>
@@ -1043,6 +1082,14 @@ input[type="text"]:disabled{color:var(--ink);background:var(--wash)}
       <h1 style="font-size:clamp(36px,6vw,52px)" id="startTitle">Qui joue ?</h1>
       <div class="clock-pick"><span class="worlds-k">Cadence</span><div class="at-grid pills" id="clockChips"></div></div>
       <div class="terrain-pick"><span class="worlds-k">Terrain</span><div class="at-grid pills" data-terrain-pick></div></div>
+      <div class="comp-online">
+        <div class="comp-go">
+          <button class="cbig hot" id="cMatch"><b>Trouver un adversaire</b><small>En ligne · partie classée (Elo)</small></button>
+          <button class="cbig" id="cInvite"><b>Inviter un ami</b><small>En ligne · partie classée, lien à envoyer</small></button>
+        </div>
+        <p class="fine comp-elo" id="compElo"></p>
+        <span class="worlds-k comp-local-k">Ou à deux, sur cet appareil</span>
+      </div>
       <p class="lede">Choisis un profil pour chaque joueur pour que la partie compte au classement, ou joue en invité avec un simple nom.</p>
       <div class="legend" aria-label="Les trois pièces">
         <div><svg viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,6 34.3,16.4 28.8,33.1 11.2,33.1 5.7,16.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="20" cy="21" r="3.4" fill="currentColor"/></svg><b>Éclaireur</b><span>cône pentagonal</span><span>mouv. 5 · force 1</span></div>
@@ -1069,6 +1116,7 @@ input[type="text"]:disabled{color:var(--ink);background:var(--wash)}
       <h1 id="endTitle"></h1>
       <p class="lede" id="endText"></p>
       <div class="scores" id="endScores"></div>
+      <p class="end-elo" id="endElo" hidden></p>
       <p id="endStats"></p>
       <div class="row">
         <button class="btn primary" id="btnAgain">Nouvelle partie</button>
@@ -2949,7 +2997,7 @@ function renderSeats() {
 function renderEndStats() {
   const lines = (G.profiles || []).map((pid) => profileById(pid)).filter(Boolean)
     .map((pr) => `<b>${esc(pr.name)}</b> : ${plural(pr.wins, 'victoire')} · ${plural(pr.draws, 'nul')} · ${plural(pr.losses, 'défaite')}`);
-  $('#endStats').innerHTML = lines.length ? lines.join('<br>') : 'Astuce : crée des profils (bouton Scores sur l’accueil) pour garder un classement.';
+  $('#endStats').innerHTML = lines.length ? lines.join('<br>') : G.online ? '' : 'Astuce : crée des profils (bouton Scores sur l’accueil) pour garder un classement.';
 }
 
 /* ---------------- application du style ---------------- */
@@ -4050,6 +4098,7 @@ function showEnd() {
   else text = 'Plus aucun coup n’est possible pour les deux camps.';
   $('#endText').textContent = w ? `${text} ${pickOne(fxText('win'))}` : text;
   $('#endScores').innerHTML = `<span><i class="chip p1"></i>${esc(pname(1))} <b>${sc(1)}</b></span><span><i class="chip p2"></i>${esc(pname(2))} <b>${sc(2)}</b></span>`;
+  renderEloChange();
   setTimeout(() => { if (G.over && mode === 'game') $('#end').hidden = false; }, 2200 * SPEED);
 }
 function undo() {
@@ -4529,6 +4578,7 @@ $('#info').addEventListener('click', (e) => {
   if (d && d.kind === 'exit') tryPlay(d);
 });
 $('#hScores').onclick = () => { SFX.click(); openDrawer('scores'); };
+$('#hBoard').onclick = () => { SFX.click(); openAccount('board'); };
 $('#hRules').onclick = () => { SFX.click(); openDrawer('rules'); };
 $('#hPlay').onclick = () => { SFX.click(); renderSeats(); setStartMode('duo'); renderTerrainPick(); showScreen('#start'); };
 $('#btnBack').onclick = () => { readNames(); SFX.click(); showScreen('#home'); };
@@ -6710,8 +6760,24 @@ function localPlayerId() {
 }
 function myAvatar() { return typeof ACC !== 'undefined' && ACC.data ? (ACC.data.av || `${ACC.data.avatar}|${ACC.data.color}`) : ''; }
 function myAccKey() { return typeof ACC !== 'undefined' && ACC.data ? ACC.data.key : ''; }
+// Classement Elo, comme aux échecs : 1200 au départ ; K = 40 pendant les 20 premières parties classées, puis 20.
+const ELO0 = 1200;
+const myElo = () => (typeof ACC !== 'undefined' && ACC.data && ACC.data.elo) || ELO0;
+function eloAfter(mine, opp, score, rated) {
+  const K = (rated || 0) < 20 ? 40 : 20, expected = 1 / (1 + Math.pow(10, (opp - mine) / 400));
+  return Math.round(mine + K * (score - expected));
+}
+// Réglages d'une partie de compétition en ligne : la cadence choisie, et la partie compte pour l'Elo.
+function compFields() {
+  const [clock, min, inc] = CLOCKS.find((c) => c[0] === compClock) || CLOCKS[4];
+  return { comp: { clock, base: min * 60000, inc: inc * 1000 }, ranked: true };
+}
 function pseudo() { if (typeof ACC !== 'undefined' && ACC.data && ACC.data.pseudo) return ACC.data.pseudo; const el = $('#onPseudo'); const v = ((el && el.value) || ON.pseudo || '').trim().slice(0, 14); ON.pseudo = v; try { localStorage.setItem('denivele.pseudo', v); } catch (e) { /* stockage indisponible */ } return v; }
-function inviteText(code) { return WEB_BUILD ? `Viens jouer à Passerelle avec moi ! ${PAGE_URL}?partie=${code}` : `Viens jouer à Passerelle avec moi ! Ouvre ${PAGE_URL}, choisis « En ligne » et entre le code ${code}.`; }
+function inviteText(code) {
+  const D = ON.data && ON.data.code === code ? ON.data : null, cl = D && D.comp && CLOCKS.find((c) => c[0] === D.comp.clock);
+  if (cl) return `Viens m’affronter en compétition classée sur Passerelle (${cl[3]}) ! ${WEB_BUILD ? `${PAGE_URL}?partie=${code}` : `Ouvre ${PAGE_URL}, choisis « En ligne » et entre le code ${code}.`}`;
+  return WEB_BUILD ? `Viens jouer à Passerelle avec moi ! ${PAGE_URL}?partie=${code}` : `Viens jouer à Passerelle avec moi ! Ouvre ${PAGE_URL}, choisis « En ligne » et entre le code ${code}.`;
+}
 function copyText(t, ok) { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast(ok), () => { window.prompt('Copie ce texte :', t); }); }
 const genCode = () => Array.from({ length: 5 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
 const partyRef = (code) => ON.db.doc('parties/' + code);
@@ -6745,7 +6811,7 @@ async function openOnline() {
   showScreen('#online');
   $('#onBody').innerHTML = '<p class="lede">Connexion…</p>';
   await onlineInit(); await accountInit();
-  if (ON.code && ON.data && (!ON.data.p1 || !ON.data.p2)) ON.view = 'wait'; else ON.view = 'menu';
+  if (ON.code && ON.data && (!ON.data.p1 || !ON.data.p2)) ON.view = ON.data.mm === 'open' ? 'search' : 'wait'; else ON.view = 'menu';
   renderOnline();
 }
 async function renderOnline() {
@@ -6758,9 +6824,26 @@ async function renderOnline() {
       : '<p class="lede">Le jeu en ligne marche quand la page est ouverte sur claude.ai, connecté à ton compte. Pour inviter quelqu’un : menu <b>Partager</b> de la page → invite-le <b>par e-mail avec l’accès Éditeur</b>, sans activer de lien public.</p>';
     return;
   }
+  const compD = ON.data && ON.data.comp ? ON.data : null;
+  $('#onEyebrow').textContent = ON.view === 'search' || compD ? 'Compétition · en ligne · partie classée' : 'En ligne · chacun sur son appareil';
+  $('#onTitle').textContent = ON.view === 'search' ? 'Recherche d’adversaire' : compD && ON.view === 'wait' ? 'Défier un ami' : 'En ligne';
+  if (ON.view === 'search') {
+    const D = ON.data || {}, cl = CLOCKS.find((c) => c[0] === ((D.comp && D.comp.clock) || MM.clock)) || CLOCKS[4];
+    B.innerHTML = `<div class="mm-radar" aria-hidden="true"><span></span><span></span><span></span><i class="av">${ACC.data ? avatarHTML(ACC.data.av || ACC.data.avatar, ACC.data.color) : avatarHTML('joie.0')}</i></div>
+      <p class="on-status mm-status"><span class="live"></span>Recherche d’un adversaire… <b id="mmTime">${mmClock()}</b></p>
+      <p class="lede mm-meta">Partie classée · ${esc(cl[3])} · ton Elo : <b>${myElo()}</b></p>
+      <p class="fine">Pas besoin de rester devant l’écran : laisse le jeu ouvert. Dès qu’un autre joueur lance une recherche, la partie démarre, avec un son${'Notification' in window ? ' et une notification' : ''}.${ACC.data ? '' : ' <button class="link" id="mmAcc">Crée ton compte</button> pour garder ton Elo et entrer au classement.'}</p>
+      ${ON.err ? `<p class="on-err" role="alert">${esc(ON.err)}</p>` : ''}
+      <div class="row"><button class="btn ghost" id="mmCancel">Annuler la recherche</button></div>`;
+    ON.err = '';
+    $('#mmCancel').onclick = () => { SFX.click(); mmCancel(); };
+    if ($('#mmAcc')) $('#mmAcc').onclick = () => { SFX.click(); openAccount('edit'); };
+    return;
+  }
   if (ON.view === 'wait') {
     const D = ON.data || {};
-    B.innerHTML = `<p class="lede">Donne ce code à ton adversaire. Il ouvre ce même lien, choisit <b>En ligne</b> et entre le code.</p>
+    const cl = D.comp && CLOCKS.find((c) => c[0] === D.comp.clock);
+    B.innerHTML = `${cl ? `<p class="on-comp">Partie classée · ${esc(cl[3])} · ton Elo : <b>${myElo()}</b> · le premier joueur est tiré au sort</p>` : ''}<p class="lede">Envoie l’invitation à ton adversaire : il clique sur le lien et arrive dans la partie. Il peut aussi choisir <b>En ligne</b> et entrer ce code.</p>
       <div class="on-code" aria-label="Code de la partie">${esc(ON.code || '')}</div>
       <p class="on-status"><span class="live"></span>${D.p1 && D.p2 ? 'Ton adversaire est arrivé, la partie démarre…' : 'En attente de ton adversaire…'}</p>
       <div class="row"><button class="btn primary" id="onInvite">Copier l’invitation</button><button class="btn" id="onCopy">Copier le code</button><button class="btn ghost" id="onCancel">Annuler cette partie</button></div>
@@ -6809,13 +6892,13 @@ async function renderOnline() {
     el.querySelectorAll('[data-resume]').forEach((b) => { b.onclick = () => { SFX.click(); enterOnline(b.dataset.resume); }; });
   } catch (e) { /* liste indisponible : on peut toujours rejoindre par code */ }
 }
-async function onlineCreate(side) {
+async function onlineCreate(side, extra = {}, view = 'wait') {
   try {
     let code = genCode();
     for (let k = 0; k < 4 && (await partyRef(code).get()).exists; k++) code = genCode();
     const nm = pseudo();
-    await partyRef(code).set({ code, seed: newSeed(), sym: !!opts.symmetric, p1: side === 1 ? ON.me : null, p2: side === 2 ? ON.me : null, n1: side === 1 ? nm : '', n2: side === 2 ? nm : '', a1: side === 1 ? myAvatar() : '', a2: side === 2 ? myAvatar() : '', k1: side === 1 ? myAccKey() : '', k2: side === 2 ? myAccKey() : '', moves: [], round: 1, over: false, created: Date.now(), updated: Date.now() });
-    ON.view = 'wait';
+    await partyRef(code).set({ code, seed: newSeed(), sym: !!opts.symmetric, p1: side === 1 ? ON.me : null, p2: side === 2 ? ON.me : null, n1: side === 1 ? nm : '', n2: side === 2 ? nm : '', a1: side === 1 ? myAvatar() : '', a2: side === 2 ? myAvatar() : '', k1: side === 1 ? myAccKey() : '', k2: side === 2 ? myAccKey() : '', e1: side === 1 ? myElo() : null, e2: side === 2 ? myElo() : null, ...extra, moves: [], round: 1, over: false, created: Date.now(), updated: Date.now() });
+    ON.view = view;
     enterOnline(code);
   } catch (e) { console.error('créer', e); ON.err = onlineError('Impossible de créer la partie', e); renderOnline(); }
 }
@@ -6835,13 +6918,14 @@ async function onlineJoin(raw) {
     if (!lease.acquired) { ON.err = 'Quelqu’un rejoint cette partie au même moment. Réessaie dans un instant.'; return renderOnline(); }
     const again = (await ref.get()).data() || {};
     if (again[seat]) { ON.err = 'Cette partie a déjà ses deux joueurs.'; return renderOnline(); }
-    await ref.update({ [seat]: ON.me, ['n' + seat.slice(1)]: pseudo(), ['a' + seat.slice(1)]: myAvatar(), ['k' + seat.slice(1)]: myAccKey(), updated: Date.now() });
+    await ref.update({ [seat]: ON.me, ['n' + seat.slice(1)]: pseudo(), ['a' + seat.slice(1)]: myAvatar(), ['k' + seat.slice(1)]: myAccKey(), ['e' + seat.slice(1)]: myElo(), updated: Date.now() });
     ON.justJoined = true;
     enterOnline(code);
   } catch (e) { console.error('rejoindre', e); ON.err = onlineError('Impossible de rejoindre', e); renderOnline(); }
 }
 function leaveOnline() {
   if (!onlineOn) return;
+  mmAbandon();
   $('#emoteBtn').hidden = true; $('#emotePanel').hidden = true;
   clearInterval(ON.poll);
   if (ON.unsub) { ON.unsub(); ON.unsub = null; }
@@ -6872,9 +6956,10 @@ function onlineSync(D) {
   ON.data = D;
   const side = D.p1 === ON.me ? 1 : D.p2 === ON.me ? 2 : 0;
   if (!side) return;
-  if (!D.p1 || !D.p2) { if (!isOnline()) { ON.view = 'wait'; if (!$('#online').hidden) renderOnline(); } return; }
+  if (!D.p1 || !D.p2) { if (!isOnline()) { ON.view = D.mm === 'open' ? 'search' : 'wait'; if (!$('#online').hidden) renderOnline(); } return; }
   if (!G || !G.online || G.online.code !== D.code || G.online.round !== D.round) return onlineStart(D, side);
   if (G.online.names && (G.online.names[0] !== (D.n1 || G.online.names[0]) || G.online.names[1] !== (D.n2 || G.online.names[1]))) onlineNames();
+  if (D.flag && G.comp && !G.over) return timeLoss(D.flag);
   onlineCatchUp();
 }
 async function onlineNames() {
@@ -6907,14 +6992,22 @@ function onlineDest(m) {
 function onlineStart(D, side) {
   cancelBot(); leaveCompLook();
   mode = 'game';
-  G = makeGame(makeTerrain(D.seed, !!D.sym), standardPieces(), { online: { code: D.code, round: D.round, side, applied: 0, names: null } });
+  const cp = D.comp && D.comp.clock ? D.comp : null;
+  G = makeGame(makeTerrain(D.seed, !!D.sym), standardPieces(), { online: { code: D.code, round: D.round, side, applied: 0, names: null }, ...(cp ? { comp: { base: cp.base, inc: cp.inc, left: [cp.base, cp.base], last: 0 } } : {}) });
+  if (cp) enterCompLook();
   history = []; selected = null; moveSet = null; pending = null;
-  for (const m of D.moves || []) { const x = onlineDest(m); if (!x) break; applyMove(G, x.pc, x.d); onlineAdvance(); G.online.applied++; }
+  // Chaque coup porte le temps que son auteur y a passé : les deux pendules se recalculent à l'identique.
+  for (const m of D.moves || []) { const x = onlineDest(m); if (!x) break; if (cp && cp.base) G.comp.left[G.turn - 1] += cp.inc - (m.t || 0); applyMove(G, x.pc, x.d); onlineAdvance(); G.online.applied++; }
+  if (cp && D.flag && !G.over) Object.assign(G, { over: true, winner: 3 - D.flag, reason: 'time' });
+  if (cp) compMark(true);
+  if (D.mm && MM && MM.beat) mmFound();
+  // Mon Elo du moment, pour le calcul de fin de partie (après une revanche, il a pu changer).
+  if (cp && D.ranked && !(D.moves || []).length && D['e' + side] !== myElo()) partyRef(D.code).update({ ['e' + side]: myElo() }).catch(() => {});
   showScreen(null); $('#end').hidden = true;
   viewTop = false; cam.tPhi = defaultPhi(); cam.tZoom = 1;
   cam.tTheta = cam.theta + wrap((side === 1 ? 0 : Math.PI) - cam.theta);
   buildWorld(!(D.moves || []).length);
-  refreshUi(); onlineTag(); onlineNames();
+  refreshUi(); onlineTag(); onlineNames(); renderClock();
   if (G.over) { showEnd(); accountRecordOnline(); }
   // Emote d'arrivée du compte, envoyée une fois au début de la partie.
   if (!(D.moves || []).length && ACC.data && ACC.data.sig && EMOTE_BY_KEY[ACC.data.sig]) setTimeout(() => { if (isOnline() && G.moveCount === 0 && ON.rm) sendEmote(ACC.data.sig); }, 2200 * SPEED);
@@ -6927,16 +7020,18 @@ function onlineCatchUp() {
   const moves = D.moves || [];
   if (moves.length < o.applied) return onlineStart(D, o.side);
   if (moves.length === o.applied) return;
-  const x = onlineDest(moves[o.applied]);
+  const m = moves[o.applied], x = onlineDest(m);
   if (!x) return onlineStart(D, o.side);
   o.applied++; o.remote = true;
+  if (G.comp && G.comp.base) { compMark(); G.comp.left[G.turn - 1] = G.comp.mark - (m.t || 0); }
   selected = x.pc.id; moveSet = x.ms;
   play(x.d);
 }
 // Notre coup : on l'ajoute à la liste partagée, puis on prévient le salon.
 function onlineSend(pc, d) {
   const o = G.online, code = o.code;
-  const moves = ((ON.data && ON.data.moves) || []).slice(0, o.applied).concat([{ pid: pc.id, kind: d.kind, r: d.r, c: d.c }]);
+  const t = G.comp && G.comp.base ? (compMark(), Math.max(0, Math.round(G.comp.mark - G.comp.left[G.turn - 1]))) : null;
+  const moves = ((ON.data && ON.data.moves) || []).slice(0, o.applied).concat([{ pid: pc.id, kind: d.kind, r: d.r, c: d.c, ...(t != null ? { t } : {}) }]);
   o.applied = moves.length; o.pending = true;
   ON.data = { ...ON.data, moves };
   partyRef(code).update({ moves, updated: Date.now() })
@@ -6954,7 +7049,7 @@ function onlineAfterMove() {
 // Revanche : nouveau relief, les camps s'échangent (l'autre commence).
 async function onlineRematch() {
   const D = ON.data; if (!D) return;
-  try { await partyRef(D.code).update({ seed: newSeed(), moves: [], round: (D.round || 1) + 1, p1: D.p2, p2: D.p1, n1: D.n2 || '', n2: D.n1 || '', a1: D.a2 || '', a2: D.a1 || '', k1: D.k2 || '', k2: D.k1 || '', over: false, updated: Date.now() }); } catch (e) { toast('Revanche impossible pour l’instant.'); }
+  try { await partyRef(D.code).update({ seed: newSeed(), moves: [], round: (D.round || 1) + 1, p1: D.p2, p2: D.p1, n1: D.n2 || '', n2: D.n1 || '', a1: D.a2 || '', a2: D.a1 || '', k1: D.k2 || '', k2: D.k1 || '', e1: D.e2 || null, e2: D.e1 || null, flag: null, over: false, updated: Date.now() }); } catch (e) { toast('Revanche impossible pour l’instant.'); }
 }
 function onlineTag() {
   emoteUi();
@@ -6962,12 +7057,12 @@ function onlineTag() {
   el.hidden = !on; if (!on) return;
   const here = opponentHere();
   el.classList.toggle('away', !here);
-  $('#onlineText').textContent = `En ligne · ${G.online.code} · ${here ? 'adversaire connecté' : 'adversaire absent'}`;
+  $('#onlineText').textContent = `${G.comp ? 'Compétition classée' : 'En ligne'} · ${G.online.code} · ${here ? 'adversaire connecté' : 'adversaire absent'}`;
   const D = ON.data || {};
   $('#onlineAv').innerHTML = [D.a1, D.a2].map((a, i) => (a ? `<i class="av" title="${esc(pname(i + 1))}">${avatarHTML(a)}</i>` : '')).join('<b>vs</b>');
 }
 $('#hOnline').onclick = () => { SFX.click(); openOnline(); };
-$('#onBack').onclick = () => { SFX.click(); if (ON.view === 'wait' && ON.data && (!ON.data.p1 || !ON.data.p2)) { /* la partie attend toujours : on peut revenir par le code */ } showScreen('#home'); };
+$('#onBack').onclick = () => { SFX.click(); if (ON.view === 'search' && MM.beat) { toast('La recherche continue : la partie démarrera dès qu’un adversaire arrive.'); setTimeout(mmUi, 50); } if (ON.view === 'wait' && ON.data && (!ON.data.p1 || !ON.data.p2)) { /* la partie attend toujours : on peut revenir par le code */ } showScreen('#home'); };
 onlineOn = true;
 onlineInit();
 /* ---------------- emotes (en ligne) ----------------
@@ -7283,8 +7378,19 @@ async function accountRecordOnline() {
   const tag = `${o.code}.${o.round}`, done = A.counted || [];
   if (done.includes(tag)) return;
   const me = o.side, w = G.winner;
+  if (D.comp && D.ranked) {
+    const before = A.elo || ELO0, score = w === me ? 1 : w ? 0 : 0.5, after = eloAfter(before, D['e' + (3 - me)] || ELO0, score, A.rated);
+    Object.assign(A, { elo: after, rated: (A.rated || 0) + 1, eloPeak: Math.max(A.eloPeak || ELO0, after), rw: (A.rw || 0) + (score === 1 ? 1 : 0), rl: (A.rl || 0) + (score === 0 ? 1 : 0), rd: (A.rd || 0) + (score === 0.5 ? 1 : 0) });
+    if (G.online === o) { G.eloChange = { before, after }; renderEloChange(); }
+  }
   Object.assign(A, { played: (A.played || 0) + 1, wins: (A.wins || 0) + (w === me ? 1 : 0), losses: (A.losses || 0) + (w && w !== me ? 1 : 0), draws: (A.draws || 0) + (w === 0 ? 1 : 0), points: (A.points || 0) + (G.scores[me - 1] || 0), counted: done.concat([tag]).slice(-60), updated: Date.now() });
   await storeSave(); renderAccountChip();
+}
+function renderEloChange() {
+  const el = $('#endElo'), e = G && G.eloChange; if (!el) return;
+  el.hidden = !e; if (!e) return;
+  const d = e.after - e.before;
+  el.innerHTML = `Elo <b>${e.before}</b> → <b>${e.after}</b> <span class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : '−'}${Math.abs(d)}</span>`;
 }
 function renderAccountChip() {
   const el = $('#accChip'); if (!el) return;
@@ -7340,6 +7446,7 @@ async function renderAccount() {
     $('#acTitle').textContent = isNew ? (list.length ? 'Nouveau compte' : 'Crée ton compte') : 'Modifier mon compte';
     const tabs = [['id', 'Identité'], ['face', 'Visage'], ['style', 'Accessoires'], ['card', 'Carte']];
     B.innerHTML = `${isNew && !list.length ? `<p class="lede">${WEB && accCloud() ? 'Ton compte est enregistré en ligne. Ajoute ensuite ton e-mail pour le retrouver sur tes autres appareils.' : accCloud() ? 'Ton compte est lié à ton compte claude.ai : pas de mot de passe, il te suit sur tous tes appareils.' : 'Ce compte restera sur cet appareil (la page n’a pas accès à ton identité claude.ai ici).'}</p>` : ''}
+      ${WEB && isNew && !list.length && accCloud() ? '<div class="ac-cloud login" id="acCloud" data-mode="login"></div>' : ''}
       <div class="ac-editor">
         <div class="ac-preview">${playerCard(d, { big: true })}<button class="btn" id="acDice">🎲 Avatar au hasard</button></div>
         <div class="ac-controls"><div class="ac-tabs" role="tablist">${tabs.map(([id, n]) => `<button role="tab" data-tab="${id}" aria-selected="${id === ACC.tab}">${n}</button>`).join('')}</div><div class="ac-panel">${editorPanel(d)}</div></div>
@@ -7368,18 +7475,36 @@ async function renderAccount() {
       toast(isNew ? `Bienvenue, ${ps} !` : 'Compte mis à jour'); ACC.view = 'card'; renderAccount();
     };
     if ($('#acCancel')) $('#acCancel').onclick = () => { ACC.draft = null; ACC.editing = null; ACC.view = 'card'; renderAccount(); };
+    renderCloud();
     return;
   }
   if (ACC.view === 'board') {
+    // Deux classements : la compétition (Elo, parties classées) et toutes les parties en ligne (victoires).
+    const elo = ACC.boardTab !== 'online';
     $('#acTitle').textContent = 'Classement';
-    B.innerHTML = '<p class="lede">Chargement…</p>';
+    const tabs = `<div class="ac-tabs board-tabs" role="tablist"><button role="tab" data-btab="elo" aria-selected="${elo}">Compétition · Elo</button><button role="tab" data-btab="online" aria-selected="${!elo}">Toutes les parties en ligne</button></div>`;
+    B.innerHTML = tabs + '<p class="lede">Chargement…</p>';
+    const bindTabs = () => B.querySelectorAll('[data-btab]').forEach((t) => { t.onclick = () => { SFX.click(); ACC.boardTab = t.dataset.btab; renderAccount(); }; });
+    bindTabs();
     let rows = [];
-    try { if (ON.db) rows = (await ON.db.collection('joueurs').limit(200).get()).docs.flatMap((x) => normStore(x.data()).accounts.map((a) => ({ ...a, owner: x.id }))).filter((r) => r.played); } catch (e) { rows = []; }
-    if (ACC.local) for (const a of ACC.store.accounts) if (a.played && !rows.some((r) => r.owner === ON.me && r.key === a.key)) rows.push({ ...a, owner: ON.me });
-    rows.sort((a, b) => (b.wins || 0) - (a.wins || 0) || (b.points || 0) - (a.points || 0));
-    B.innerHTML = rows.length ? `<ol class="ac-board">${rows.slice(0, 30).map((r, i) => `<li class="${r.owner === ON.me && D && r.key === D.key ? 'me' : ''}"><b class="rk">${i + 1}</b><i class="av">${avatarHTML(r.av || r.avatar, r.color)}</i><span class="nm"><b data-i="${i}"></b><small data-t="${i}"></small></span><span class="st">${r.wins || 0} V · ${r.losses || 0} D · ${r.draws || 0} N</span><span class="pt">${r.points || 0} pts</span></li>`).join('')}</ol>` : '<p class="lede">Personne n’a encore fini de partie en ligne. Lance-toi !</p>';
-    rows.slice(0, 30).forEach((r, i) => { const el = B.querySelector(`[data-i="${i}"]`); if (el) { el.textContent = r.pseudo || 'Joueur'; B.querySelector(`[data-t="${i}"]`).textContent = r.title || ''; } });
-    B.insertAdjacentHTML('beforeend', '<div class="row"><button class="btn" id="acBack2">← Mes comptes</button></div>');
+    try { if (ON.db) rows = (await ON.db.collection('joueurs').limit(500).get()).docs.flatMap((x) => normStore(x.data()).accounts.map((a) => ({ ...a, owner: x.id }))); } catch (e) { rows = []; }
+    if (ACC.local) for (const a of ACC.store.accounts) if (!rows.some((r) => r.owner === ON.me && r.key === a.key)) rows.push({ ...a, owner: ON.me });
+    if (ACC.view !== 'board') return;
+    rows = rows.filter((r) => (elo ? r.rated : r.played));
+    if (elo) rows.sort((a, b) => (b.elo || ELO0) - (a.elo || ELO0) || (b.rated || 0) - (a.rated || 0));
+    else rows.sort((a, b) => (b.wins || 0) - (a.wins || 0) || (b.points || 0) - (a.points || 0));
+    const mine = rows.findIndex((r) => r.owner === ON.me && D && r.key === D.key);
+    const shown = rows.slice(0, 50).map((r, i) => [r, i]);
+    if (mine >= 50) shown.push([rows[mine], mine]);
+    const line = ([r, i]) => `<li class="${i === mine ? 'me' : ''}${i < 3 ? ' top top' + (i + 1) : ''}"><b class="rk">${i + 1}</b><i class="av">${avatarHTML(r.av || r.avatar, r.color)}</i><span class="nm"><b data-i="${i}"></b><small data-t="${i}"></small></span>`
+      + (elo ? `<span class="st">${r.rated} partie${r.rated > 1 ? 's' : ''} · ${r.rw || 0} V · ${r.rl || 0} D · ${r.rd || 0} N</span><span class="pt">${r.elo || ELO0}<small> Elo</small></span>`
+        : `<span class="st">${r.wins || 0} V · ${r.losses || 0} D · ${r.draws || 0} N</span><span class="pt">${r.points || 0} pts</span>`) + '</li>';
+    const empty = elo ? 'Personne n’a encore joué de partie classée. Lance une recherche en Compétition !' : 'Personne n’a encore fini de partie en ligne. Lance-toi !';
+    B.innerHTML = tabs + (elo ? '<p class="fine board-note">Elo comme aux échecs : tout le monde commence à 1200. Battre un joueur mieux classé rapporte plus de points.</p>' : '')
+      + (rows.length ? `<ol class="ac-board">${shown.map((x, k) => (k === 50 ? '<li class="gap" aria-hidden="true">…</li>' : '') + line(x)).join('')}</ol>` : `<p class="lede">${empty}</p>`);
+    bindTabs();
+    shown.forEach(([r, i]) => { const el = B.querySelector(`[data-i="${i}"]`); if (el) { el.textContent = r.pseudo || 'Joueur'; B.querySelector(`[data-t="${i}"]`).textContent = r.title || ''; } });
+    B.insertAdjacentHTML('beforeend', `<div class="row">${ACC.data ? '<button class="btn" id="acBack2">← Mes comptes</button>' : '<button class="btn" id="acBack2">Créer mon compte</button>'}</div>`);
     $('#acBack2').onclick = () => { ACC.view = ACC.data ? 'card' : 'edit'; if (!ACC.data) startEdit(null); renderAccount(); };
     return;
   }
@@ -7389,7 +7514,7 @@ async function renderAccount() {
   B.innerHTML = `${switcher}
     <div class="ac-show">${playerCard(D, { big: true })}
       <div class="ac-detail"><p class="ac-since">Joueur depuis le ${new Date(D.created || Date.now()).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}${ACC.local ? ' · sur cet appareil' : WEB ? '' : ' · lié à claude.ai'}</p>
-        <div class="ac-stats"><span><b>${D.played || 0}</b>parties</span><span><b>${D.wins || 0}</b>victoires</span><span><b>${D.losses || 0}</b>défaites</span><span><b>${D.draws || 0}</b>nuls</span><span><b>${rate}%</b>de victoires</span><span><b>${D.points || 0}</b>points</span></div>
+        <div class="ac-stats"><span class="elo"><b>${D.elo || ELO0}</b>Elo${D.rated ? '' : ' (départ)'}</span><span><b>${D.played || 0}</b>parties</span><span><b>${D.wins || 0}</b>victoires</span><span><b>${D.losses || 0}</b>défaites</span><span><b>${D.draws || 0}</b>nuls</span><span><b>${rate}%</b>de victoires</span><span><b>${D.points || 0}</b>points</span></div>
         <p class="fine">Les stats comptent les parties en ligne terminées avec ce compte.</p></div></div>
     ${WEB && !ACC.local ? '<div class="ac-cloud" id="acCloud"></div>' : ''}
     <div class="row"><button class="btn primary" id="acPlay">Jouer en ligne</button><button class="btn" id="acBoard">Classement</button><button class="btn" id="acEdit">Personnaliser</button><button class="btn ghost" id="acDelete">Supprimer ce compte</button></div>`;
@@ -7413,6 +7538,8 @@ const CLOUD = { step: 'ask', email: '', err: '' };
 async function renderCloud() {
   const el = $('#acCloud'); if (!el || !WEB) return;
   const st = await PASSERELLE_AUTH.state(); if (!$('#acCloud')) return;
+  const login = el.dataset.mode === 'login';
+  if (!st.anonymous && login) { el.hidden = true; return; }
   if (!st.anonymous) {
     el.innerHTML = '<p class="fine">Comptes sauvegardés avec <b></b> : connecte-toi avec cette adresse sur tes autres appareils pour les retrouver.</p><button class="link" id="ccOut">Se déconnecter</button>';
     el.querySelector('b').textContent = st.email || 'Google';
@@ -7424,8 +7551,9 @@ async function renderCloud() {
   el.innerHTML = CLOUD.step === 'code'
     ? `<h3 class="on-h">Vérifie tes e-mails</h3><p class="fine">On a envoyé un code à <b></b>. Entre-le ici, ou clique sur le lien de l’e-mail.</p>
        <div class="ac-cloud-row"><input type="text" id="ccCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Code reçu"><button class="btn primary" id="ccOk">Valider</button></div>${err}<button class="link" id="ccBack">Changer d’adresse</button>`
-    : `<h3 class="on-h">Retrouve tes comptes partout</h3><p class="fine">Pour l’instant, tes comptes sont liés à ce navigateur. Ajoute ton e-mail pour les retrouver sur ton téléphone ou un autre ordinateur. Pas de mot de passe : on t’envoie un code.</p>
-       <div class="ac-cloud-row"><input type="email" id="ccMail" autocomplete="email" placeholder="ton@email.fr"><button class="btn primary" id="ccSend">Recevoir un code</button></div>${err}
+    : `${login ? '<h3 class="on-h">Tu as déjà un compte ?</h3><p class="fine">Si tu as ajouté ton e-mail à ton compte, entre-le ici : on t’envoie un code et tu retrouves tes comptes, ton Elo et tes stats.</p>'
+      : '<h3 class="on-h">Retrouve tes comptes partout</h3><p class="fine">Pour l’instant, tes comptes sont liés à ce navigateur. Ajoute ton e-mail pour les retrouver sur ton téléphone ou un autre ordinateur. Pas de mot de passe : on t’envoie un code.</p>'}
+       <div class="ac-cloud-row"><input type="email" id="ccMail" autocomplete="email" placeholder="ton@email.fr"><button class="btn${login ? '' : ' primary'}" id="ccSend">${login ? 'Me connecter' : 'Recevoir un code'}</button></div>${err}
        ${PASSERELLE_AUTH.google ? '<button class="btn" id="ccGoogle">Continuer avec Google</button>' : ''}`;
   const stash = () => { try { localStorage.setItem('denivele.mergeAccounts', JSON.stringify({ from: ON.me, accounts: ACC.store.accounts })); } catch (e) { /* stockage indisponible */ } };
   const unstash = () => { try { localStorage.removeItem('denivele.mergeAccounts'); } catch (e) { /* stockage indisponible */ } };
@@ -7509,17 +7637,32 @@ function renderClock() {
   }
 }
 // Le temps file pour le joueur au trait ; à zéro, il perd la partie.
+// Temps restant au début du tour en cours : sert à mesurer le temps passé sur un coup (partie en ligne).
+function compMark(force) {
+  const c = G.comp;
+  if (force || c.markN !== G.moveCount) { c.markN = G.moveCount; c.mark = c.left[G.turn - 1]; }
+}
 function tickClock(now) {
   if (mode !== 'game' || !isComp() || !G.comp.base || G.over) return;
-  const c = G.comp, dt = now - (c.last || now); c.last = now;
+  const c = G.comp, dt = now - (c.last || now), o = G.online; c.last = now;
+  compMark();
+  // En ligne, la pendule s'arrête pendant qu'un coup s'anime ou voyage : chaque coup porte son temps exact.
+  if (o && (busy || o.remote || o.pending)) return renderClock();
   c.left[G.turn - 1] -= dt;
   if (c.left[G.turn - 1] <= 0) {
-    c.left[G.turn - 1] = 0;
-    G.over = true; G.winner = 3 - G.turn; G.reason = 'time';
-    busy = false; selected = null; moveSet = null; clearMarkers();
-    refreshUi(); showEnd();
+    // En ligne, chacun annonce sa propre chute ; l'adversaire ne la réclame qu'après 4 s de marge (déconnexion).
+    if (o && G.turn !== o.side && c.left[G.turn - 1] > -4000) return renderClock();
+    if (o) partyRef(o.code).update({ flag: G.turn, over: true, updated: Date.now() }).catch(() => {});
+    return timeLoss(G.turn);
   }
   renderClock();
+}
+function timeLoss(loser) {
+  G.comp.left[loser - 1] = 0;
+  G.over = true; G.winner = 3 - loser; G.reason = 'time';
+  busy = false; selected = null; moveSet = null; clearMarkers();
+  refreshUi(); renderClock(); showEnd();
+  if (G.online) accountRecordOnline();
 }
 function startCompetition() {
   cancelBot(); leaveOnline();
@@ -7544,7 +7687,118 @@ function setStartMode(m) {
   $('#btnPlay').textContent = comp ? 'Lancer la pendule' : 'Lancer la partie';
   $('#clockChips').innerHTML = CLOCKS.map(([id, , , n]) => `<button class="at-opt pill" data-clock="${id}" aria-pressed="${id === compClock}"><span class="lbl">${n}</span></button>`).join('');
   $('#clockChips').querySelectorAll('[data-clock]').forEach((b) => { b.onclick = () => { compClock = b.dataset.clock; SFX.click(); setStartMode('comp'); }; });
+  if (comp) renderCompElo();
 }
+function renderCompElo() {
+  const el = $('#compElo'), A = typeof ACC !== 'undefined' && ACC.data;
+  el.innerHTML = A ? `<i class="av">${avatarHTML(A.av || A.avatar, A.color)}</i><span><b></b> · Elo <b>${myElo()}</b>${A.rated ? ` · ${A.rated} partie${A.rated > 1 ? 's' : ''} classée${A.rated > 1 ? 's' : ''}` : ''}</span><button class="link" id="compBoard">Voir le classement</button>`
+    : `<span>Crée ton compte pour avoir un Elo et entrer au classement.</span><button class="link" id="compAcc">Créer mon compte</button><button class="link" id="compBoard">Voir le classement</button>`;
+  if (A) el.querySelector('b').textContent = A.pseudo;
+  $('#compBoard').onclick = () => { SFX.click(); openAccount('board'); };
+  if ($('#compAcc')) $('#compAcc').onclick = () => { SFX.click(); openAccount('edit'); };
+}
+$('#cMatch').onclick = () => { SFX.click(); mmStart(); };
+$('#cInvite').onclick = async () => {
+  SFX.click(); mmStop();
+  showScreen('#online'); $('#onBody').innerHTML = '<p class="lede">Connexion…</p>';
+  await onlineInit(); await accountInit();
+  if (!onlineOk()) { ON.view = 'menu'; return renderOnline(); }
+  onlineCreate(Math.random() < 0.5 ? 1 : 2, compFields());
+};
+
+/* ---------------- recherche d'adversaire (matchmaking) ----------------
+   Chercher, c'est d'abord prendre la place d'un joueur qui attend déjà (même cadence et Elo proche en
+   priorité) ; sinon on ouvre sa propre partie « en recherche » et on attend. Pas besoin de chercher au même
+   moment : l'attente dure tant que le jeu reste ouvert (un battement toutes les 10 s le prouve aux autres). */
+var MM = { beat: null, t0: 0, n: 0, clock: '' };
+const mmClock = () => { const s = Math.floor((Date.now() - (MM.t0 || Date.now())) / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+function mmStop() { if (!MM) return; clearInterval(MM.beat); MM.beat = null; mmUi(); }
+function mmUi() {
+  const pill = $('#mmPill'); if (!pill) return;
+  pill.hidden = !(MM.beat && $('#online').hidden && mode !== 'game');
+  $('#mmPillTime').textContent = mmClock();
+  const t = $('#mmTime'); if (t) t.textContent = mmClock();
+}
+// Mon ticket encore ouvert : on le retire (je quitte, je lance autre chose, ou je rejoins quelqu'un d'autre).
+function mmAbandon() {
+  if (!MM || !MM.beat) return;
+  const D = ON.data, code = ON.code;
+  mmStop();
+  if (code && D && D.mm === 'open' && !(D.p1 && D.p2)) partyRef(code).delete().catch(() => {});
+}
+async function mmStart() {
+  mmAbandon();
+  MM.t0 = Date.now(); MM.n = 0; MM.clock = compClock;
+  ON.view = 'search'; showScreen('#online'); $('#onBody').innerHTML = '<p class="lede">Connexion…</p>';
+  await onlineInit(); await accountInit();
+  if (!onlineOk()) { ON.view = 'menu'; return renderOnline(); }
+  if (ON.code && !isOnline()) leaveOnline();
+  try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); } catch (e) { /* notifications indisponibles */ }
+  renderOnline();
+  if (await mmTryJoin()) return;
+  if (ON.view !== 'search') return;
+  await onlineCreate(Math.random() < 0.5 ? 1 : 2, { ...compFields(), mm: 'open', seen: Date.now() }, 'search');
+  if (!ON.code) return;
+  clearInterval(MM.beat);
+  MM.beat = setInterval(mmBeat, 1000);
+  mmUi();
+}
+async function mmBeat() {
+  mmUi();
+  const D = ON.data;
+  if (!D || D.mm !== 'open' || (D.p1 && D.p2)) return;
+  if (++MM.n % 10) return;
+  partyRef(ON.code).update({ seen: Date.now() }).catch(() => {});
+  // Deux joueurs ont pu ouvrir leur recherche en même temps : le plus récent rejoint le plus ancien.
+  mmTryJoin(D.created || Date.now());
+}
+async function mmTryJoin(before) {
+  let list = [];
+  try { list = (await ON.db.collection('parties').where('mm', '==', 'open').limit(40).get()).docs.map((d) => d.data()); } catch (e) { return false; }
+  const now = Date.now(), me = myElo(), elo = (D) => D.e1 || D.e2 || ELO0, same = (D) => (D.comp && D.comp.clock === MM.clock ? 0 : 1);
+  list = list.filter((D) => D && D.comp && D.code !== ON.code && !D.over && D.p1 !== ON.me && D.p2 !== ON.me && !(D.p1 && D.p2)
+    && now - (D.seen || 0) < 60000 && (!before || (D.created || 0) < before));
+  list.sort((a, b) => same(a) - same(b) || Math.abs(elo(a) - me) - Math.abs(elo(b) - me) || (a.created || 0) - (b.created || 0));
+  for (const D of list) if (await mmJoin(D.code)) return true;
+  return false;
+}
+async function mmJoin(code) {
+  try {
+    const ref = partyRef(code);
+    let lease = { acquired: true };
+    try { if (typeof ref.acquire === 'function') lease = await ref.acquire({ holder: ON.me, ttlMs: 5000 }); } catch (e) { /* verrou facultatif */ }
+    if (!lease.acquired) return false;
+    const D = (await ref.get()).data();
+    if (!D || D.mm !== 'open' || (D.p1 && D.p2)) return false;
+    const seat = !D.p1 ? 'p1' : 'p2', n = seat.slice(1);
+    await ref.update({ [seat]: ON.me, ['n' + n]: pseudo(), ['a' + n]: myAvatar(), ['k' + n]: myAccKey(), ['e' + n]: myElo(), mm: 'done', updated: Date.now() });
+    // Deux joueurs ont pu viser la même place : on vérifie qu'elle est bien à nous.
+    const after = (await ref.get()).data();
+    if (!after || after[seat] !== ON.me) return false;
+    const own = MM.beat && ON.data && ON.data.mm === 'open' ? ON.code : null;
+    mmStop();
+    ON.justJoined = true; ON.view = 'menu';
+    enterOnline(code);
+    if (own && own !== code) partyRef(own).delete().catch(() => {});
+    return true;
+  } catch (e) { return false; }
+}
+function mmCancel() {
+  mmAbandon();
+  ON.view = 'menu'; leaveOnline();
+  renderCompElo(); showScreen('#start');
+}
+// Adversaire trouvé : un son, et une notification si le jeu est en arrière-plan.
+function mmFound() {
+  mmStop();
+  SFX.success();
+  if (!document.hidden) return;
+  try { if ('Notification' in window && Notification.permission === 'granted') new Notification('Passerelle', { body: 'Adversaire trouvé : la partie commence !' }); } catch (e) { /* notifications indisponibles */ }
+  const t0 = document.title; let k = 0;
+  const iv = setInterval(() => { document.title = k++ % 2 ? t0 : '⚔ Adversaire trouvé !'; if (!document.hidden) { clearInterval(iv); document.title = t0; } }, 900);
+}
+$('#mmPill').onclick = () => { SFX.click(); ON.view = 'search'; showScreen('#online'); renderOnline(); mmUi(); };
+
 $('#hComp').onclick = () => { SFX.click(); renderSeats(); setStartMode('comp'); renderTerrainPick(); showScreen('#start'); };
 
 /* Option de partie : terrain aléatoire (par défaut) ou symétrique. */

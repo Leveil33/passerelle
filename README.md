@@ -5,6 +5,7 @@ Jeu de stratégie à deux, en 3D : traverse le plateau avant ton adversaire.
 **Jouer : https://passerelle-game.netlify.app/**
 
 - En local à deux, contre un bot (entraînement), en compétition, ou **en ligne**, chacun sur son appareil.
+- Compétition en ligne : recherche d'adversaire automatique ou défi à un ami, pendule partagée, **classement Elo** dans le jeu.
 - Comptes personnalisables (plusieurs par personne), classement, emotes, météo, plusieurs univers.
 - Installable comme une appli sur téléphone ou ordinateur, et jouable hors connexion (sauf le mode en ligne).
 
@@ -36,6 +37,8 @@ node tests/comptes.js                         # comptes, multi-comptes, classeme
 SRC=tests/index.html python3 web/make_web.py tests/web
 printf "window.PASSERELLE_CONFIG = { supabaseUrl: 'https://test.supabase.co', supabaseKey: 'cle-test' };\n" > tests/web/config.js
 node tests/web-faux-serveur.js
+node tests/competition.js                     # recherche d'adversaire, pendule partagée, Elo, classement
+node tests/connexion.js                       # retrouver son compte par e-mail sur un nouvel appareil
 ```
 
 Ces tests ont besoin de Node et de Playwright, avec Chromium.

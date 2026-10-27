@@ -10,7 +10,7 @@ OUT = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else SITE
 SB = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js'
 s = open(SRC, encoding='utf-8').read()
 VERSION = hashlib.sha1(s.encode('utf-8')).hexdigest()[:10]  # nouveau cache hors ligne à chaque version du jeu
-head = f'''<!doctype html>
+head = r'''<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -23,6 +23,19 @@ head = f'''<!doctype html>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Passerelle">
+<script src="config.js"></script>
+<script>
+// Une seule adresse pour le jeu. Chaque adresse a sa propre mémoire de navigateur (donc son propre joueur) :
+// les liens de déploiement de Netlify (« 6ae0…--site.netlify.app ») ramènent à l'adresse principale du site,
+// et toute autre adresse *.netlify.app ramène à celle de config.js (siteUrl), si elle est indiquée.
+(function () {
+  var h = location.hostname, C = window.PASSERELLE_CONFIG || {}, to = null;
+  var m = h.match(/^(?:embed-)?[0-9a-f]{16,}--(.+\.netlify\.app)$/);
+  if (m) to = 'https://' + m[1];
+  if (C.siteUrl && /\.netlify\.app$/.test(h)) { try { if (new URL(C.siteUrl).hostname !== h) to = C.siteUrl.replace(/\/$/, ''); } catch (e) { /* adresse invalide */ } }
+  if (to) location.replace(to + location.pathname + location.search + location.hash);
+})();
+</script>
 '''
 import re
 i = s.index('<title>Passerelle</title>')
@@ -32,8 +45,7 @@ three = '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three
 if three not in s: three = '<script src="../vendor/three.min.js"></script>'
 assert s.count(three) == 1
 local = os.path.relpath(os.path.join(ROOT, 'vendor', 'three.min.js'), OUT).replace(os.sep, '/')
-s = s.replace(three, f'''<script src="config.js"></script>
-<script src="{SB}"></script>
+s = s.replace(three, f'''<script src="{SB}"></script>
 <script src="supabase-adapter.js"></script>
 {three if 'cdnjs' in three else f'<script src="{local}"></script>'}''', 1)
 assert s.rstrip().endswith('</script>')
