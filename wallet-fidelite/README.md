@@ -59,12 +59,12 @@ http://localhost:3000/api/health (réponse en JSON, aucun secret affiché).
 Les tables du Wallet sont dans le **même projet Supabase que le jeu Passerelle** (décision du
 projet). Elles sont strictement ajoutées à côté : la table du jeu (`public.docs`) n'est pas touchée.
 
-Tout est décrit dans `supabase/migrations/20261120000000_loyalty_schema.sql` :
+Tout est décrit dans `supabase/migrations/` (`…_loyalty_schema.sql`, puis `…_stamp_icons.sql`) :
 
 | Table | Rôle |
 |---|---|
 | `merchants`, `merchant_users` | commerces, et leurs membres (`owner` ou `staff`) |
-| `loyalty_programs` | programme : cases, récompense, message de proximité, délai anti double scan |
+| `loyalty_programs` | programme : cases, récompense, message de proximité, délai anti double scan, tampon (`stamp_icon`, `stamp_icon_url`) |
 | `locations` | adresses du commerce (latitude / longitude) |
 | `customers`, `cards` | clients et leurs cartes (numéro de série, secret Apple, tampons) |
 | `stamp_events` | journal de tous les changements de tampons |
@@ -75,12 +75,19 @@ Tout est décrit dans `supabase/migrations/20261120000000_loyalty_schema.sql` :
 en une seule transaction. Personne (même propriétaire) ne peut écrire directement dans `cards`
 ou `stamp_events`. Les employés ne peuvent lire ni le `auth_token` Apple ni l'e-mail des clients.
 
+**Personnalisation** : le propriétaire d'un commerce peut changer son nom, sa couleur, les cases, la
+récompense, le message de proximité et **choisir son tampon** (bibliothèque d'icônes, ou image
+importée). Le **logo** et l'**image de tampon importée** ne s'écrivent jamais directement : le commerçant
+envoie un fichier, le serveur le contrôle et le range, puis écrit lui-même l'adresse (sinon notre
+serveur pourrait être poussé à télécharger n'importe quelle adresse). L'écran de modification et
+l'import sont prévus en Phase 5 ; le dessin du bandeau de tampons en Phases 2 (Apple) et 3 (Google).
+
 Refus renvoyés par ces fonctions (traduits en français dans `src/lib/loyalty/errors.ts`) :
 `card_not_found`, `program_inactive`, `card_full`, `card_not_full`, `double_scan` (avec les
 secondes restantes), `nothing_to_undo`, `undo_expired`, `not_authenticated`.
 
-Pour recréer la base sur un nouveau projet Supabase : copier le contenu du fichier de migration
-dans *SQL Editor → New query → Run* (une seule fois).
+Pour recréer la base sur un nouveau projet Supabase : copier le contenu des fichiers de migration,
+dans l'ordre, dans *SQL Editor → New query → Run* (une seule fois chacun).
 
 ## Tests
 

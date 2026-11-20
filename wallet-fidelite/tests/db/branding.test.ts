@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { asUser, createShop, createTestDb, expectDbError } from "./helpers";
+import { asServer, asUser, createShop, createTestDb, expectDbError } from "./helpers";
 
 let db: PGlite;
 beforeAll(async () => {
@@ -11,26 +11,45 @@ afterAll(async () => {
 });
 
 const merchant = async (id: string) =>
-  (await db.query("select name, logo_url, brand_color from public.merchants where id = $1", [id])).rows[0];
+  (
+    await db.query<{ name: string; logo_url: string | null; brand_color: string }>(
+      "select name, logo_url, brand_color from public.merchants where id = $1",
+      [id],
+    )
+  ).rows[0];
 
-describe("personnalisation du commerce (logo, couleur, nom)", () => {
-  it("le propriétaire change le logo, la couleur et le nom de son commerce", async () => {
+describe("personnalisation du commerce (nom, couleur, logo)", () => {
+  it("le propriétaire change la couleur et le nom de son commerce", async () => {
     const shop = await createShop(db, { name: "Avant" });
 
     await asUser(db, shop.ownerUserId, () =>
-      db.query("update public.merchants set name = $2, logo_url = $3, brand_color = $4 where id = $1", [
+      db.query("update public.merchants set name = $2, brand_color = $3 where id = $1", [
         shop.merchantId,
         "Après",
-        "https://exemple.fr/logo.png",
         "#E11D48",
       ]),
     );
 
-    expect(await merchant(shop.merchantId)).toEqual({
-      name: "Après",
-      logo_url: "https://exemple.fr/logo.png",
-      brand_color: "#E11D48",
-    });
+    expect(await merchant(shop.merchantId)).toEqual({ name: "Après", logo_url: null, brand_color: "#E11D48" });
+  });
+
+  it("le logo, lui, est posé par le serveur (après contrôle du fichier envoyé), jamais directement par le commerçant", async () => {
+    const shop = await createShop(db);
+
+    for (const who of [shop.ownerUserId, shop.staffUserId]) {
+      const err = await expectDbError(() =>
+        asUser(db, who, () =>
+          db.query("update public.merchants set logo_url = 'https://interne.exemple/enorme.png' where id = $1", [shop.merchantId]),
+        ),
+      );
+      expect(err.message).toMatch(/permission denied/i);
+    }
+    expect((await merchant(shop.merchantId)).logo_url).toBeNull();
+
+    await asServer(db, () =>
+      db.query("update public.merchants set logo_url = 'https://exemple.fr/logo.png' where id = $1", [shop.merchantId]),
+    );
+    expect((await merchant(shop.merchantId)).logo_url).toBe("https://exemple.fr/logo.png");
   });
 
   it("un employé ne peut rien changer (aucune ligne touchée)", async () => {
@@ -52,21 +71,26 @@ describe("personnalisation du commerce (logo, couleur, nom)", () => {
     expect((await merchant(b.merchantId)).brand_color).toBe("#1F2937");
   });
 
-  it("refuse une couleur invalide et un logo non sécurisé (http)", async () => {
+  it("refuse une couleur invalide (propriétaire) et un logo non sécurisé en http (même côté serveur)", async () => {
     const shop = await createShop(db);
     for (const sql of [
       "update public.merchants set brand_color = 'rouge' where id = $1",
       "update public.merchants set brand_color = '#FFF' where id = $1",
-      "update public.merchants set logo_url = 'http://exemple.fr/logo.png' where id = $1",
     ]) {
       const err = await expectDbError(() => asUser(db, shop.ownerUserId, () => db.query(sql, [shop.merchantId])));
       expect(err.message, sql).toMatch(/check constraint/i);
     }
+    const http = await expectDbError(() =>
+      asServer(db, () =>
+        db.query("update public.merchants set logo_url = 'http://exemple.fr/logo.png' where id = $1", [shop.merchantId]),
+      ),
+    );
+    expect(http.message).toMatch(/check constraint/i);
   });
 
-  it("le propriétaire peut retirer le logo (valeur vide)", async () => {
+  it("le serveur peut retirer le logo", async () => {
     const shop = await createShop(db);
-    await asUser(db, shop.ownerUserId, async () => {
+    await asServer(db, async () => {
       await db.query("update public.merchants set logo_url = 'https://exemple.fr/l.png' where id = $1", [shop.merchantId]);
       await db.query("update public.merchants set logo_url = null where id = $1", [shop.merchantId]);
     });

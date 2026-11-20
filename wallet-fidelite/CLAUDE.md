@@ -195,3 +195,28 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
 - Avant toute commande qui supprime des données ou modifie la base en production, demande-moi.
 - Fais des commits clairs à chaque étape terminée.
 - Si une contrainte Apple ou Google empêche de faire quelque chose comme décrit ici, dis-le-moi clairement au lieu de trouver une solution bancale.
+
+---
+
+## 12. Décisions prises en cours de projet (ajoutées après le cahier des charges initial)
+
+- **Base de données partagée avec le jeu** : les tables du Wallet sont dans le projet Supabase du jeu
+  Passerelle (`rxfxukkbmocnaccpakbn`). Règle de travail : changements **additifs uniquement**, on ne
+  touche jamais à `public.docs` ni à ce qui sert au jeu. Les joueurs du jeu sont des utilisateurs
+  anonymes (rôle `authenticated`) : toute règle de sécurité du Wallet repose donc sur
+  l'appartenance à un commerce (`merchant_users`), jamais sur « être connecté ».
+- **Personnalisation par le commerçant** : nom, couleur, logo, **tampon** (choisi dans une
+  bibliothèque d'icônes, ou image importée), cases, récompense, message de proximité, délai anti
+  double scan. Pas de mise en page ni de polices personnalisées en V1. La couleur du texte est
+  calculée automatiquement (lisibilité).
+- **Tampon** : colonnes `loyalty_programs.stamp_icon` (nom d'icône de la bibliothèque, ou `custom`) et
+  `stamp_icon_url` (image importée). La « case vide » est la même icône estompée, générée
+  automatiquement. Le bandeau est dessiné par le serveur à chaque état de la carte (Apple : image
+  `strip` dans le `.pkpass` ; Google : `heroImage`, adresse publique https versionnée).
+- **Images posées uniquement par le serveur** (logo et tampon importé) : le commerçant envoie un
+  FICHIER (jamais une adresse), le serveur le contrôle (vrai format, taille), le redimensionne, le range
+  dans notre stockage, puis écrit lui-même l'adresse. Raison : notre serveur télécharge ces images pour
+  fabriquer les cartes, une adresse libre permettrait de lui faire télécharger n'importe quoi (SSRF).
+  `merchants.logo_url` et `loyalty_programs.stamp_icon_url` n'ont aucun droit d'écriture pour
+  `authenticated`.
+- **Création de commerces** : côté serveur uniquement (pas d'inscription libre en V1).
