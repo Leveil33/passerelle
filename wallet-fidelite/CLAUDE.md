@@ -315,8 +315,8 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
     téléphones (iPhone : PWA installée) ; formes de requêtes PostgREST (lectures simples, une table à la fois).
 - **Offre commerciale (décision de la propriétaire, mise en œuvre prévue en Phase 7 « paiement », après les Phases 5 et 6)** :
   - Deux formules aux mêmes services (cartes, clients, employés illimités ; Apple et Google ; appli de scan ; statistiques) :
-    **mensuel 29 € HT / mois**, sans engagement ; **annuel 290 € HT / an**, payé d'avance, 12 mois d'engagement
-    (2 mois offerts). Prix proposés par Claude comme point de départ : **à confirmer** par la propriétaire.
+    **mensuel 35 € HT / mois**, sans engagement ; **annuel 300 € HT / an**, payé d'avance, 12 mois d'engagement
+    (soit 25 € HT / mois, 120 € d'économie sur 12 mensualités, environ 29 %). Prix **fixés par la propriétaire**.
   - **Rien de gratuit** : pas d'essai gratuit, pas de réduction de lancement. Un commerce n'est actif qu'une fois le
     premier paiement reçu (activation par webhook Stripe).
   - Prévu avec Stripe (Checkout, prélèvement SEPA, factures, page « Gérer mon abonnement »). Abonnement impayé ou
