@@ -200,11 +200,17 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
 
 ## 12. Décisions prises en cours de projet (ajoutées après le cahier des charges initial)
 
-- **Base de données partagée avec le jeu** : les tables du Wallet sont dans le projet Supabase du jeu
-  Passerelle (`rxfxukkbmocnaccpakbn`). Règle de travail : changements **additifs uniquement**, on ne
-  touche jamais à `public.docs` ni à ce qui sert au jeu. Les joueurs du jeu sont des utilisateurs
-  anonymes (rôle `authenticated`) : toute règle de sécurité du Wallet repose donc sur
-  l'appartenance à un commerce (`merchant_users`), jamais sur « être connecté ».
+- **Base de données** : projet Supabase `rxfxukkbmocnaccpakbn`. Il hébergeait auparavant le jeu
+  Passerelle, supprimé le 2026-11-20 : fichiers du jeu retirés du dépôt (commit `491f549`), table
+  `docs` et fonction `doc_merge` supprimées (migration `drop_passerelle_game`). Le code du jeu reste dans
+  l'historique Git (dernier commit qui le contient : `3a967f0`) ; la sauvegarde des données est un fichier
+  hors dépôt, gardé par la propriétaire du projet. Le projet ne contient plus que le Wallet.
+  Il reste dans Supabase Auth 38 comptes dont 35 anonymes venant du jeu : ces comptes sont des
+  utilisateurs `authenticated` comme les autres, donc toute règle de sécurité du Wallet repose sur
+  l'appartenance à un commerce (`merchant_users`), jamais sur « être connecté ». Réglage du tableau de
+  bord à désactiver (Authentication, Sign In / Providers) : « Allow anonymous sign-ins ».
+- **Dépôt GitHub public** : jamais de secret, de donnée personnelle (pseudos, e-mails, sauvegardes de
+  base) ni de certificat dans Git.
 - **Personnalisation par le commerçant** : nom, couleur, logo, **tampon** (choisi dans une
   bibliothèque d'icônes, ou image importée), cases, récompense, message de proximité, délai anti
   double scan. Pas de mise en page ni de polices personnalisées en V1. La couleur du texte est

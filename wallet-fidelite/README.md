@@ -56,8 +56,8 @@ http://localhost:3000/api/health (réponse en JSON, aucun secret affiché).
 
 ## Base de données (Phase 1)
 
-Les tables du Wallet sont dans le **même projet Supabase que le jeu Passerelle** (décision du
-projet). Elles sont strictement ajoutées à côté : la table du jeu (`public.docs`) n'est pas touchée.
+Le projet Supabase ne contient que le Wallet (le jeu Passerelle qui y était hébergé a été supprimé le
+2026-11-20, avec une sauvegarde gardée hors dépôt).
 
 Tout est décrit dans `supabase/migrations/` (`…_loyalty_schema.sql`, puis `…_stamp_icons.sql`) :
 
