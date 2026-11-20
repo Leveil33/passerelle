@@ -225,7 +225,20 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
   fabriquer les cartes, une adresse libre permettrait de lui faire télécharger n'importe quoi (SSRF).
   `merchants.logo_url` et `loyalty_programs.stamp_icon_url` n'ont aucun droit d'écriture pour
   `authenticated`.
-- **Création de commerces** : côté serveur uniquement (pas d'inscription libre en V1).
+- **Création de commerces (décision : petite page réservée à la propriétaire de la solution)** : pas
+  d'inscription libre en V1. Page `/admin` (Phase 5) où la propriétaire saisit le nom du commerce et
+  l'e-mail de son propriétaire (en option : nombre de cases et récompense) ; le serveur crée le commerce,
+  un programme pré-rempli (10 cases par défaut), le lien `merchant_users` (rôle `owner`) et envoie
+  l'invitation par e-mail (le propriétaire choisit son mot de passe). Règles de sécurité à respecter :
+  - accès réservé aux « administrateurs de la plateforme », identifiés par leur **identifiant
+    utilisateur** dans une table dédiée (`platform_admins`, sans aucun droit pour `anon` ni
+    `authenticated`), jamais par un simple e-mail ni par une donnée modifiable côté client ;
+  - la clé secrète n'est utilisée côté serveur qu'**après** avoir vérifié cet accès ;
+  - chaque création est journalisée (qui, quand, quel commerce) ;
+  - le premier compte administrateur se crée dans le tableau de bord Supabase (Authentication, Users, Add
+    user), puis son identifiant est ajouté à `platform_admins` avec l'accord de la propriétaire.
+  En attendant cette page (Phases 2 à 4), les commerces de test sont créés avec la propriétaire par un
+  script lancé avec son accord.
 - **Messages du commerçant à ses clients (décision : option 2)** : l'envoi reste hors V1 (§10) mais il est
   prévu après. La préparation est faite : `customers.marketing_consent_at` (vide = pas de consentement),
   lisible et modifiable par le serveur uniquement. À respecter dans les phases suivantes :
