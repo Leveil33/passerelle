@@ -13,7 +13,7 @@ installable (PWA) pour que les commerçants scannent les cartes de leurs clients
 |---|---|---|
 | 0 | Mise en place (Next.js, Supabase, Tailwind, `.env.example`) | ✅ fait (connexion vérifiée ; test de la clé secrète à refaire une fois la variable ajoutée) |
 | 1 | Base de données et logique métier | ✅ fait, en attente de validation |
-| 2 | Carte Apple Wallet | à faire |
+| 2 | Carte Apple Wallet | code terminé et testé ; **reste le test sur un vrai iPhone** (voir [le guide](./docs/guide-apple-vercel.md)) |
 | 3 | Carte Google Wallet | à faire |
 | 4 | PWA commerçant | à faire |
 | 5 | Administration | à faire |
@@ -89,6 +89,27 @@ secondes restantes), `nothing_to_undo`, `undo_expired`, `not_authenticated`.
 Pour recréer la base sur un nouveau projet Supabase : copier le contenu des fichiers de migration,
 dans l'ordre, dans *SQL Editor → New query → Run* (une seule fois chacun).
 
+## Apple Wallet (Phase 2)
+
+Adresses de l'appli (les chemins `/api/apple/v1/…` sont imposés par Apple) :
+
+| Adresse | Rôle |
+|---|---|
+| `POST /api/cards` | crée le client et sa carte (appelée par la future page d'inscription) |
+| `GET /api/cards/{série}/apple` | télécharge la carte pour l'ajouter à Apple Wallet |
+| `POST` / `DELETE /api/apple/v1/devices/{appareil}/registrations/{passTypeId}/{série}` | un iPhone s'enregistre / se désinscrit |
+| `GET /api/apple/v1/devices/{appareil}/registrations/{passTypeId}` | cartes de cet iPhone modifiées depuis un repère |
+| `GET /api/apple/v1/passes/{passTypeId}/{série}` | la carte à jour (exige le secret de la carte) |
+| `POST /api/apple/v1/log` | journaux envoyés par l'iPhone |
+
+**Comment la carte se met à jour toute seule :** un tampon est écrit en base → le serveur envoie à l'iPhone
+un signal vide via APNs (`src/lib/apple/notify.ts`) → l'iPhone redemande la carte → il affiche la nouvelle
+version, et le texte `changeMessage` du champ « status » devient la notification (« Plus que 7 tampons avant
+ta récompense ! »). Les modifications du commerçant (récompense, couleur, adresses…) marquent aussi les cartes
+comme modifiées, automatiquement, par des déclencheurs de la base.
+
+**Guide pour toi (comptes Apple et Vercel, certificats) :** [`docs/guide-apple-vercel.md`](./docs/guide-apple-vercel.md).
+
 ## Tests
 
 ```bash
@@ -99,6 +120,12 @@ npm test
   (PGlite, en mémoire — aucune clé ni connexion nécessaire) : tampon, carte pleine, remise à 0,
   anti double scan, annulation, et les règles de sécurité (qui peut voir ou faire quoi).
 - `src/lib/loyalty/` : signature des QR codes (HMAC) et messages d'erreur.
+- `src/lib/stamps/`, `src/lib/wallet/` : dessin des tampons, couleurs lisibles, dates.
+- `tests/wallet-*.test.ts`, `tests/apple-push.test.ts` : fabrication et signature de la carte (vérifiée
+  par openssl), adresses d'Apple de bout en bout, envoi du signal vers un faux serveur Apple.
+
+Les tests Apple utilisent de **faux certificats** fabriqués à la volée : ils prouvent que la carte est bien
+construite et signée, pas qu'Apple l'accepte. Cela ne se vérifie que sur un vrai iPhone.
 
 Limites connues : PGlite est un Postgres 18, Supabase est en 17 ; et la protection contre deux
 téléphones qui tamponnent exactement en même temps repose sur le verrou de ligne (`for update`),
@@ -119,6 +146,9 @@ qui n'est pas testé sous charge.
 src/app/                 pages et routes API (Next.js, App Router)
 src/app/api/health/      contrôle de la connexion Supabase
 src/lib/loyalty/         signature des QR codes (HMAC) et messages d'erreur des tampons
+src/lib/apple/           carte Apple Wallet : fabrication, service Web, signal vers les iPhone
+src/lib/stamps/          icônes de tampon et dessin du bandeau de la carte
+src/lib/wallet/          accès aux données du Wallet, couleurs, dates, outils communs
 supabase/migrations/     le SQL de la base (tables, sécurité, fonctions de tampon)
 tests/db/                tests de la base et de sa sécurité
 src/lib/supabase/        les 3 façons de parler à Supabase :

@@ -251,3 +251,25 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
     journal des messages envoyés, textes courts, aperçu avant envoi.
 - **Jeu Passerelle retiré partout** : fichiers (commit `491f549`), base Supabase (`drop_passerelle_game`) et
   page publiée sur claude.ai (supprimée le 2026-11-20). Le site Netlify est à supprimer par la propriétaire.
+- **Phase 2 (Apple) — choix de conception** :
+  - Toute la logique de données est dans des fonctions SQL réservées au serveur (`service_role`), testées sur
+    le vrai SQL ; le code web n'est que du transport (`src/lib/wallet/store.ts`). Les fonctions « serveur »
+    (`create_card`, `loyalty_pass_data`, `apple_*`, `rate_limit_hit`) ne sont jamais appelables par `anon` ni
+    `authenticated`.
+  - `cards.updated_at` ne change que pour un tampon, une récompense ou un changement de programme (pas pour
+    la plateforme). Un déclencheur le met à jour quand le commerçant change son programme, son commerce
+    (nom, logo, couleur) ou ses adresses : c'est ce que l'iPhone interroge (`passesUpdatedSince`).
+  - Notification Apple : un seul champ `status` (même clé à chaque état) dont la valeur change à chaque tampon ;
+    son `changeMessage` est recalculé à chaque génération (pluriel géré, message « récompense disponible »).
+  - APNs : message vide `{}`, sujet = Pass Type ID, certificat de la carte, **serveur de production seulement**.
+    L'en-tête `apns-push-type` n'est pas envoyé (aucune source officielle ; un ingénieur Apple a validé une requête
+    sans). **À vérifier sur un vrai iPhone** ; ajuster seulement si les cartes ne se mettent pas à jour.
+  - Last-Modified / If-Modified-Since : date annoncée = seconde SUIVANT le changement, et seulement une fois
+    écoulée ; « rien de neuf » seulement si la date de l'iPhone est strictement postérieure (évite de rater deux
+    changements dans la même seconde).
+  - Limitation du débit : compteur en base (`rate_limit_hit`), par appareil, par carte ou par IP. En cas de
+    panne du compteur : on laisse passer pour les cartes, on refuse pour la création de carte.
+  - Pas encore fait (Phase 5) : logo du commerçant dans la carte (`merchants.logo_url`, aujourd'hui `logoText`
+    = nom du commerce) et tampon importé (`stamp_icon = 'custom'`, aujourd'hui l'étoile par défaut) ; ils
+    exigent l'envoi de fichiers contrôlés par le serveur.
+  - `POST /api/dev/push` est un outil de test provisoire (secret `DEV_TOOLS_TOKEN`) : à supprimer en Phase 4.
