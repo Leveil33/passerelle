@@ -97,8 +97,6 @@ local ou cette session ne suffisent pas.
 ## 3. Premier essai sur ton iPhone (je te guide)
 1. Je crée un commerce de test et une carte de test (avec ton accord).
 2. Tu ouvres le lien de la carte dans Safari sur ton iPhone et tu appuies sur « Ajouter ».
-3. Je mets un tampon, je déclenche la mise à jour : la carte doit changer toute seule, avec une
-   notification (« Plus que N tampons avant ta récompense ! »).
-
-Pour l'étape 3, il faut aussi une variable `DEV_TOOLS_TOKEN` (une suite de 24 caractères au moins, au
-hasard) : c'est le mot de passe de l'outil de test provisoire, supprimé en Phase 4.
+3. Avec **un autre téléphone** connecté à l'appli commerçant (voir [`guide-commercant.md`](./guide-commercant.md)),
+   tu scannes le QR code de la carte et tu ajoutes un tampon : la carte de l'iPhone doit changer toute seule,
+   avec une notification (« Plus que N tampons avant ta récompense ! »).

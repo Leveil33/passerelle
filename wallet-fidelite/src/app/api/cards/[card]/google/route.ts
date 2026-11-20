@@ -2,7 +2,8 @@
 import { withGoogleDeps } from "@/lib/google/deps";
 import { handleGoogleLink } from "@/lib/google/web-service";
 
-export async function GET(req: Request, ctx: { params: Promise<{ serial: string }> }) {
-  const params = await ctx.params;
+export async function GET(req: Request, ctx: { params: Promise<{ card: string }> }) {
+  const { card } = await ctx.params;
+  const params = { serial: card };
   return withGoogleDeps((deps) => handleGoogleLink(req, params, deps));
 }

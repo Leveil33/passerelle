@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Test navigateur (lancé à part avec tsx, utilise playwright fourni hors du projet) et scripts ponctuels.
+    "tests/e2e/**",
+    "scripts/**",
   ]),
 ]);
 

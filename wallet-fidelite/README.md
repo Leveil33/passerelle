@@ -15,7 +15,7 @@ installable (PWA) pour que les commerçants scannent les cartes de leurs clients
 | 1 | Base de données et logique métier | ✅ fait, en attente de validation |
 | 2 | Carte Apple Wallet | code terminé et testé ; **reste le test sur un vrai iPhone** (voir [le guide](./docs/guide-apple-vercel.md)) |
 | 3 | Carte Google Wallet | code terminé et testé ; **reste le test sur un vrai Android** (voir [le guide](./docs/guide-google-wallet.md)) |
-| 4 | PWA commerçant | à faire |
+| 4 | PWA commerçant | code terminé et testé (dont un test dans un vrai navigateur) ; **reste le test sur un vrai téléphone avec un vrai compte** (voir [le guide](./docs/guide-commercant.md)) |
 | 5 | Administration | à faire |
 | 6 | Finitions et mise en ligne | à faire |
 
@@ -123,6 +123,18 @@ Chaque **programme** est une « classe » chez Google (nom, logo, couleur, adres
 message avec notification (3 par 24 h et par carte au maximum chez Google ; une place est gardée pour la
 récompense). **Guide pour toi (comptes Google) :** [`docs/guide-google-wallet.md`](./docs/guide-google-wallet.md).
 
+## Appli commerçant (Phase 4)
+
+| Adresse | Rôle |
+|---|---|
+| `/staff/login`, `/staff`, `/staff/scan` | connexion, accueil, scan (installable sur l'écran d'accueil) |
+| `POST /api/scan` | lit un QR code et renvoie l'état de la carte (prénom, tampons, récompense) |
+| `POST /api/cards/{id}/stamp` · `redeem` · `undo` | +1 tampon, valider la récompense, annuler le dernier tampon |
+
+Tout se fait **au nom de l'employé connecté** (jamais avec la clé secrète) : c'est la base elle-même qui vérifie
+ses droits. Après un changement, Apple et Google sont prévenus **après** la réponse (`after()` de Next.js), et une
+panne de leur côté ne fait jamais échouer un tampon. **Guide :** [`docs/guide-commercant.md`](./docs/guide-commercant.md).
+
 ## Tests
 
 ```bash
@@ -136,6 +148,11 @@ npm test
 - `src/lib/stamps/`, `src/lib/wallet/` : dessin des tampons, couleurs lisibles, dates.
 - `tests/wallet-*.test.ts`, `tests/apple-push.test.ts` : fabrication et signature de la carte (vérifiée
   par openssl), adresses d'Apple de bout en bout, envoi du signal vers un faux serveur Apple.
+
+**Test dans un vrai navigateur** (`npm run test:e2e`) : construit l'appli, la lance avec un faux Supabase, puis pilote
+Chromium avec une fausse caméra qui montre un vrai QR code (connexion, lecture du QR, tampon, double scan, annulation,
+récompense, hors-ligne, déconnexion). Il nécessite Chromium et Playwright, présents dans l'environnement cloud mais
+pas installés par `npm install`.
 
 Les tests Google s'exécutent contre un **faux serveur Google** (`tests/helpers/fake-google.ts`) qui vérifie la
 signature du compte de service, refuse les doublons, impose la limite de 10 messages et simule des pannes.
@@ -162,6 +179,9 @@ qui n'est pas testé sous charge.
 src/app/                 pages et routes API (Next.js, App Router)
 src/app/api/health/      contrôle de la connexion Supabase
 src/lib/loyalty/         signature des QR codes (HMAC) et messages d'erreur des tampons
+src/app/staff/           appli commerçant (connexion, accueil, scan)
+src/lib/staff/           logique de l'appli commerçant (adresses, étapes de l'écran de scan)
+src/proxy.ts             rafraîchit la session de l'employé
 src/lib/apple/           carte Apple Wallet : fabrication, service Web, signal vers les iPhone
 src/lib/google/          carte Google Wallet : classe, carte, lien « Ajouter », mises à jour
 src/lib/stamps/          icônes de tampon et dessin des images (bandeau Apple, visuel et logo Google)

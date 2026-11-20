@@ -272,7 +272,7 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
   - Pas encore fait (Phase 5) : logo du commerçant dans la carte (`merchants.logo_url`, aujourd'hui `logoText`
     = nom du commerce) et tampon importé (`stamp_icon = 'custom'`, aujourd'hui l'étoile par défaut) ; ils
     exigent l'envoi de fichiers contrôlés par le serveur.
-  - `POST /api/dev/push` est un outil de test provisoire (secret `DEV_TOOLS_TOKEN`) : à supprimer en Phase 4.
+  - L'outil de test provisoire `POST /api/dev/push` a été supprimé en Phase 4 (le scan commerçant prévient les Wallets).
 - **Phase 3 (Google) — choix de conception** :
   - Adresses dans `merchantLocations` sur la **classe** (le champ `locations` est obsolète chez Google et ne
     déclenche plus de notification de proximité). Une classe par programme (`<issuer>.<programId>`), un objet par
@@ -296,3 +296,20 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
   - Pas encore fait (Phase 5) : mise à jour en masse des cartes existantes quand le commerçant change l'apparence
     (`syncClass` existe pour la classe ; les cartes gardent l'ancienne image jusqu'à leur prochain tampon), logo
     importé, tampon importé.
+- **Phase 4 (appli commerçant) — choix de conception** :
+  - Connexion e-mail + mot de passe (Supabase Auth, cookies via `@supabase/ssr`) ; `src/proxy.ts` rafraîchit la
+    session sur `/staff/*` ; chaque page et chaque adresse vérifie elle-même la connexion (`getUser()`, jamais le
+    cookie seul). Les adresses d'action s'exécutent avec la session de l'employé (pas la clé secrète) : droits et
+    refus viennent de la base (RLS + `stamp_card` / `redeem_reward` / `undo_last_stamp`).
+  - POST protégés : contenu JSON obligatoire et en-tête `Origin` identique à l'hôte (`guardPost`), en plus du cookie SameSite.
+  - Scan : le QR signé est vérifié (HMAC) AVANT toute lecture en base ; « carte inconnue » et « carte d'un autre
+    commerce » donnent la même réponse 404 ; l'état renvoyé ne contient ni secret Apple, ni e-mail, ni numéro de série.
+  - Après réussite, `notifyWallets` (Apple puis Google) est planifié avec `after()` : une panne ne fait jamais échouer
+    un tampon. Seuls les tampons déclenchent une notification Google (voir Phase 3).
+  - Écran de scan : étapes isolées dans un automate pur testé (`scan-machine.ts`) ; vibration au succès / à l'erreur ;
+    saisie manuelle du code si la caméra est refusée. Pas de mode hors ligne : une page claire est affichée sans réseau.
+  - Service worker minimal : installable + page hors-ligne ; ne met JAMAIS en cache pages ni données. Manifeste
+    `scope: "/"` (le `start_url` `/staff` doit être dans la portée).
+  - `NEXT_PUBLIC_*` est figé à la construction (le test navigateur construit lui-même l'appli avec ses réglages).
+  - **À vérifier au premier essai réel** : connexion avec un vrai compte Supabase ; lecture caméra sur de vrais
+    téléphones (iPhone : PWA installée) ; formes de requêtes PostgREST (lectures simples, une table à la fois).

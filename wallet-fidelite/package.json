@@ -8,11 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "tsx tests/e2e/staff-app.e2e.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.2",
+    "html5-qrcode": "^2.3.8",
     "next": "16.4.6",
     "passkit-generator": "^3.7.0",
     "react": "19.3.0",
@@ -23,12 +25,15 @@
     "@electric-sql/pglite": "^0.5.17",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^22.20.5",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "fflate": "^0.8.3",
+    "qrcode": "^1.5.4",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.1"
   },

@@ -52,11 +52,9 @@ ONLY » disparaît quand tout est approuvé. **Les délais dépendent de Google.
 ## Premier essai sur ton Android (je te guide)
 1. Je crée un commerce de test et une carte de test (avec ton accord).
 2. Tu ouvres le lien de la carte sur ton Android (connecté avec un compte testeur) : « Ajouter à Google Wallet ».
-3. Je mets un tampon et je déclenche la mise à jour : la carte doit changer d'elle-même, avec une notification
-   « Plus que N tampons avant ta récompense ! ».
-
-Pour déclencher la mise à jour à la main pendant les essais, on utilise l'outil de test provisoire
-(`DEV_TOOLS_TOKEN`, voir le guide Apple / Vercel).
+3. Avec **un autre téléphone** connecté à l'appli commerçant (voir [`guide-commercant.md`](./guide-commercant.md)),
+   tu scannes le QR code de la carte et tu ajoutes un tampon : la carte de l'Android doit changer d'elle-même,
+   avec une notification « Plus que N tampons avant ta récompense ! ».
 
 ## À savoir
 - **Notifications :** Google accepte au maximum 3 messages avec notification par 24 h et par carte. Notre
