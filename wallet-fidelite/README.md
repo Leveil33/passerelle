@@ -11,8 +11,8 @@ installable (PWA) pour que les commerçants scannent les cartes de leurs clients
 
 | Phase | Contenu | État |
 |---|---|---|
-| 0 | Mise en place (Next.js, Supabase, Tailwind, `.env.example`) | ✅ fait, en attente de validation |
-| 1 | Base de données et logique métier | à faire |
+| 0 | Mise en place (Next.js, Supabase, Tailwind, `.env.example`) | ✅ fait (connexion vérifiée ; test de la clé secrète à refaire une fois la variable ajoutée) |
+| 1 | Base de données et logique métier | ✅ fait, en attente de validation |
 | 2 | Carte Apple Wallet | à faire |
 | 3 | Carte Google Wallet | à faire |
 | 4 | PWA commerçant | à faire |
@@ -54,6 +54,49 @@ Ouvre http://localhost:3000 : la page affiche trois ✅ si la connexion à Supab
 ou un ❌ avec l'explication de ce qui manque. Le même contrôle est disponible en
 http://localhost:3000/api/health (réponse en JSON, aucun secret affiché).
 
+## Base de données (Phase 1)
+
+Les tables du Wallet sont dans le **même projet Supabase que le jeu Passerelle** (décision du
+projet). Elles sont strictement ajoutées à côté : la table du jeu (`public.docs`) n'est pas touchée.
+
+Tout est décrit dans `supabase/migrations/20261120000000_loyalty_schema.sql` :
+
+| Table | Rôle |
+|---|---|
+| `merchants`, `merchant_users` | commerces, et leurs membres (`owner` ou `staff`) |
+| `loyalty_programs` | programme : cases, récompense, message de proximité, délai anti double scan |
+| `locations` | adresses du commerce (latitude / longitude) |
+| `customers`, `cards` | clients et leurs cartes (numéro de série, secret Apple, tampons) |
+| `stamp_events` | journal de tous les changements de tampons |
+| `apple_registrations` | appareils Apple qui suivent une carte (serveur uniquement) |
+
+**Les tampons ne changent que par trois fonctions** : `stamp_card`, `redeem_reward`,
+`undo_last_stamp`. Chacune vérifie les droits, verrouille la carte, met à jour et écrit le journal
+en une seule transaction. Personne (même propriétaire) ne peut écrire directement dans `cards`
+ou `stamp_events`. Les employés ne peuvent lire ni le `auth_token` Apple ni l'e-mail des clients.
+
+Refus renvoyés par ces fonctions (traduits en français dans `src/lib/loyalty/errors.ts`) :
+`card_not_found`, `program_inactive`, `card_full`, `card_not_full`, `double_scan` (avec les
+secondes restantes), `nothing_to_undo`, `undo_expired`, `not_authenticated`.
+
+Pour recréer la base sur un nouveau projet Supabase : copier le contenu du fichier de migration
+dans *SQL Editor → New query → Run* (une seule fois).
+
+## Tests
+
+```bash
+npm test
+```
+
+- `tests/db/` : les tests rejouent **le vrai fichier de migration** sur une base Postgres embarquée
+  (PGlite, en mémoire — aucune clé ni connexion nécessaire) : tampon, carte pleine, remise à 0,
+  anti double scan, annulation, et les règles de sécurité (qui peut voir ou faire quoi).
+- `src/lib/loyalty/` : signature des QR codes (HMAC) et messages d'erreur.
+
+Limites connues : PGlite est un Postgres 18, Supabase est en 17 ; et la protection contre deux
+téléphones qui tamponnent exactement en même temps repose sur le verrou de ligne (`for update`),
+qui n'est pas testé sous charge.
+
 ## Commandes utiles
 
 | Commande | Rôle |
@@ -61,12 +104,16 @@ http://localhost:3000/api/health (réponse en JSON, aucun secret affiché).
 | `npm run dev` | Lance l'appli en local |
 | `npm run build` | Construit la version de production (vérifie qu'il n'y a pas d'erreur) |
 | `npm run lint` | Vérifie la qualité du code |
+| `npm test` | Lance les tests |
 
 ## Organisation du code
 
 ```
 src/app/                 pages et routes API (Next.js, App Router)
 src/app/api/health/      contrôle de la connexion Supabase
+src/lib/loyalty/         signature des QR codes (HMAC) et messages d'erreur des tampons
+supabase/migrations/     le SQL de la base (tables, sécurité, fonctions de tampon)
+tests/db/                tests de la base et de sa sécurité
 src/lib/supabase/        les 3 façons de parler à Supabase :
   client.ts                 depuis le navigateur (clé publique)
   server.ts                 depuis le serveur, au nom de l'utilisateur connecté (RLS active)
