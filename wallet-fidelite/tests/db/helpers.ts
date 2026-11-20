@@ -24,6 +24,10 @@ const SUPABASE_STUBS = `
     select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
   $f$;
 
+  -- Dossiers d'images de Supabase Storage (seule la table des dossiers est simulée).
+  create schema storage;
+  create table storage.buckets (id text primary key, name text not null, public boolean not null default false, file_size_limit bigint, allowed_mime_types text[]);
+
   grant usage on schema public to anon, authenticated, service_role;
   grant usage on schema auth to anon, authenticated, service_role;
   grant execute on function auth.uid() to anon, authenticated, service_role;
