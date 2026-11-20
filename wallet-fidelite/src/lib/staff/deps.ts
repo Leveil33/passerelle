@@ -16,6 +16,9 @@ export async function withStaff(run: (deps: StaffDeps) => Promise<Response>): Pr
     if (error || !data.user) {
       return json({ error: "Session expirée : reconnectez-vous puis réessayez.", code: "not_authenticated" }, 401);
     }
+    if (data.user.app_metadata?.must_change_password === true) {
+      return json({ error: "Vous devez d'abord choisir votre propre mot de passe.", code: "password_change_required" }, 403);
+    }
     return await run({
       staff: createSupabaseStaffStore(supabase),
       qrSecret: getQrSecret(),

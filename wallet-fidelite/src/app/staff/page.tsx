@@ -7,6 +7,7 @@ import { LogoutButton } from "./logout-button";
 async function Home() {
   const session = await getStaffSession();
   if (!session) redirect("/staff/login");
+  if (session.mustChangePassword) redirect("/staff/mot-de-passe");
 
   if (session.memberships.length === 0) {
     return (
@@ -30,6 +31,11 @@ async function Home() {
       <Link href="/staff/scan" className="rounded-2xl bg-green-600 px-6 py-8 text-center text-2xl font-bold text-white shadow active:bg-green-700">
         Scanner une carte
       </Link>
+      {session.memberships.some((m) => m.role === "owner") && (
+        <Link href="/staff/admin" className="rounded-2xl border border-zinc-300 px-6 py-5 text-center text-lg font-semibold dark:border-zinc-700">
+          Réglages de mon commerce
+        </Link>
+      )}
       <div className="mt-auto">
         <LogoutButton />
       </div>

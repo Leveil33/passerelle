@@ -3,7 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
 export type Membership = { merchantId: string; merchantName: string; role: "owner" | "staff" };
-export type StaffSession = { userId: string; email: string | null; memberships: Membership[] };
+export type StaffSession = { userId: string; email: string | null; mustChangePassword: boolean; memberships: Membership[] };
 
 /** Renvoie null si personne n'est connecté. Une personne connectée sans commerce a une liste vide. */
 export async function getStaffSession(): Promise<StaffSession | null> {
@@ -19,6 +19,7 @@ export async function getStaffSession(): Promise<StaffSession | null> {
   return {
     userId: data.user.id,
     email: data.user.email ?? null,
+    mustChangePassword: data.user.app_metadata?.must_change_password === true,
     memberships: (links ?? []).map((l) => ({
       merchantId: l.merchant_id as string,
       merchantName: names.get(l.merchant_id as string) ?? "Commerce",

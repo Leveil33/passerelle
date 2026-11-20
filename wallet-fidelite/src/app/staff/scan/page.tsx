@@ -6,6 +6,7 @@ import { Scanner } from "./scanner";
 async function Guard() {
   const session = await getStaffSession();
   if (!session) redirect("/staff/login");
+  if (session.mustChangePassword) redirect("/staff/mot-de-passe");
   if (session.memberships.length === 0) redirect("/staff");
   return <Scanner />;
 }

@@ -16,7 +16,7 @@ installable (PWA) pour que les commerçants scannent les cartes de leurs clients
 | 2 | Carte Apple Wallet | code terminé et testé ; **reste le test sur un vrai iPhone** (voir [le guide](./docs/guide-apple-vercel.md)) |
 | 3 | Carte Google Wallet | code terminé et testé ; **reste le test sur un vrai Android** (voir [le guide](./docs/guide-google-wallet.md)) |
 | 4 | PWA commerçant | code terminé et testé (dont un test dans un vrai navigateur) ; **reste le test sur un vrai téléphone avec un vrai compte** (voir [le guide](./docs/guide-commercant.md)) |
-| 5 | Administration | à faire |
+| 5 | Administration (réglages du commerçant + page de la propriétaire de la solution) | code terminé et testé (dont un test dans un vrai navigateur) ; **reste le test avec un vrai compte** (voir [le guide](./docs/guide-administration.md)) |
 | 6 | Finitions et mise en ligne | à faire |
 
 ## Installation en local
@@ -134,6 +134,22 @@ récompense). **Guide pour toi (comptes Google) :** [`docs/guide-google-wallet.m
 Tout se fait **au nom de l'employé connecté** (jamais avec la clé secrète) : c'est la base elle-même qui vérifie
 ses droits. Après un changement, Apple et Google sont prévenus **après** la réponse (`after()` de Next.js), et une
 panne de leur côté ne fait jamais échouer un tampon. **Guide :** [`docs/guide-commercant.md`](./docs/guide-commercant.md).
+
+## Administration (Phase 5)
+
+| Adresse | Rôle |
+|---|---|
+| `/staff/admin` | réglages du commerçant (propriétaire du commerce) : programme, couleur, logo, tampon, adresses, équipe, statistiques |
+| `/staff/mot-de-passe` | choix obligatoire d'un mot de passe personnel à la première connexion |
+| `/admin` | page réservée à la propriétaire de la solution : créer un commerce et son compte propriétaire |
+| `PATCH /api/admin/program` · `/merchant` · `POST/PATCH/DELETE /api/admin/locations` · `/api/admin/team` · `POST /api/admin/assets` | réglages (au nom de l'utilisateur : la base applique ses droits) |
+| `POST /api/platform/merchants` | création d'un commerce (clé secrète, réservé aux administrateurs de la plateforme) |
+
+Une modification du programme, de la couleur, du logo ou du tampon met à jour **toutes les cartes déjà distribuées**
+(Apple : notification vide puis relecture ; Google : mise à jour de la classe). Les images importées sont
+**refabriquées côté serveur** (format, taille et pixels contrôlés, métadonnées retirées). Pas d'e-mail d'invitation :
+un **mot de passe provisoire** est affiché une seule fois et doit être changé à la première connexion.
+**Guide :** [`docs/guide-administration.md`](./docs/guide-administration.md).
 
 ## Tests
 

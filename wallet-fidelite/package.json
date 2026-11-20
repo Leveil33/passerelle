@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "tsx tests/e2e/staff-app.e2e.mts"
+    "test:e2e": "tsx tests/e2e/staff-app.e2e.mts && tsx tests/e2e/admin-app.e2e.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

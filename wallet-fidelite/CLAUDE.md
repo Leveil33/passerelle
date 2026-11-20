@@ -324,3 +324,20 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
     Wallets restent. Offre annuelle résiliée : accès jusqu'à la fin des 12 mois payés.
   - À prévoir : un indicateur « compte offert / interne » modifiable par la propriétaire seule, pour ses commerces de test.
   - Exige une entreprise déclarée (facturation, TVA, compte Stripe) ; faire relire les conditions générales de vente.
+- **Phase 5 (administration)** :
+  - Deux niveaux : le **propriétaire d'un commerce** règle son programme depuis `/staff/admin` (au nom de l'utilisateur, droits
+    vérifiés par la base ET par le code) ; la **propriétaire de la solution** (table `platform_admins`) crée les commerces depuis
+    `/admin` (clé secrète, journal `admin_audit_log`). Pour toute autre personne `/admin` et `/api/platform/*` répondent « introuvable ».
+  - **Pas d'e-mail d'invitation** (Supabase SMTP non requis) : mot de passe provisoire aléatoire (14 caractères, sans caractères
+    ambigus) affiché UNE fois ; `app_metadata.must_change_password` bloque l'appli (403 `password_change_required`) jusqu'au changement.
+  - Un trigger interdit de retirer le dernier propriétaire d'un commerce (`last_owner`, PT409).
+  - Réglages limités au **premier commerce / premier programme** de l'utilisateur (une carte par commerce en V1).
+  - Propagation après modification : Apple (push vide par lots de 500) puis Google (`syncClass` + rafraîchissement), plafonnée à
+    2000 cartes par modification, jamais bloquante (`after()`, erreurs avalées).
+  - Images : uniquement dans notre bucket `merchant-assets` (PNG ≤ 2 Mo après refabrication), chargées sans suivre de redirection.
+    Pas de suppression de logo en V1 (on le remplace).
+  - Formulaires en `noValidate` : les messages d'erreur viennent du serveur, en français ; les confirmations sont gardées dans le
+    parent pour survivre au rafraîchissement qui recrée les formulaires.
+  - Test de mutation : retirer la vérification de rôle dans `handleUpdateProgram` n'est pas détecté car la RLS bloque déjà (défense en profondeur voulue).
+  - Test navigateur `tests/e2e/admin-app.e2e.mts` (17 étapes) avec faux Supabase ; `/admin` peut répondre HTTP 200 avec le contenu
+    « introuvable » (contrôle fait pendant l'envoi de la page) : rien n'est révélé.
