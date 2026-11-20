@@ -8,24 +8,31 @@ import { DEFAULT_STAMP_ICON, STAMP_ICONS, isStampIconKey } from "./icons";
 export const STRIP_SIZE = { width: 375, height: 123 } as const;
 export type Scale = 1 | 2 | 3;
 
+// Marges et taille maximale d'une case, pour un bandeau de 375 points de large : elles sont
+// proportionnelles à la largeur de l'image (le grand visuel de Google est 2,75 fois plus large).
 const PAD_X = 10;
 const PAD_Y = 8;
 const MAX_CELL = 64;
 const MAX_ROWS = 8;
 
+/** Grand visuel d'une carte Google (rapport 1032 : 812) et logo du programme (carré, 660 px minimum). */
+export const HERO_SIZE = { width: 1032, height: 812 } as const;
+export const PROGRAM_LOGO_SIZE = 660;
+
 export type StripLayout = { rows: number; cols: number; cell: number };
 
 /** Choisit le nombre de lignes qui donne les plus grandes cases (ex. 10 tampons → 2 lignes de 5). */
 export function stripLayout(count: number, width: number = STRIP_SIZE.width, height: number = STRIP_SIZE.height): StripLayout {
-  const areaW = width - 2 * PAD_X;
-  const areaH = height - 2 * PAD_Y;
+  const k = width / STRIP_SIZE.width;
+  const areaW = width - 2 * PAD_X * k;
+  const areaH = height - 2 * PAD_Y * k;
   let best: StripLayout = { rows: 1, cols: Math.max(1, count), cell: 0 };
   for (let rows = 1; rows <= MAX_ROWS; rows++) {
     const cols = Math.ceil(count / rows);
     const cell = Math.min(areaW / cols, areaH / rows);
     if (cell > best.cell + 1e-9) best = { rows, cols, cell };
   }
-  return { ...best, cell: Math.min(best.cell, MAX_CELL) };
+  return { ...best, cell: Math.min(best.cell, MAX_CELL * k) };
 }
 
 /** Contenu SVG de l'icône : celle de la bibliothèque, ou l'étoile par défaut (nom inconnu, « custom »…). */
@@ -50,12 +57,18 @@ export type StripOptions = {
   icon: string;
 };
 
-export function stripSvg(opts: StripOptions, scale: Scale): string {
-  const { width, height } = STRIP_SIZE;
+export function stripSvg(
+  opts: StripOptions,
+  scale: Scale,
+  size: { readonly width: number; readonly height: number } = STRIP_SIZE,
+  background?: Rgb,
+): string {
+  const { width, height } = size;
+  const k = width / STRIP_SIZE.width;
   const total = Math.max(1, Math.floor(opts.stampsRequired));
   const filled = Math.min(Math.max(0, Math.floor(opts.stamps)), total);
   const fg = toHex(opts.foreground);
-  const { rows, cols, cell } = stripLayout(total);
+  const { rows, cols, cell } = stripLayout(total, width, height);
   const radius = cell * 0.44;
   const iconSize = cell * 0.5;
 
@@ -68,12 +81,12 @@ export function stripSvg(opts: StripOptions, scale: Scale): string {
     const cy = height / 2 + (row - (rows - 1) / 2) * cell;
     if (i < filled) {
       parts.push(
-        `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${radius.toFixed(2)}" fill="${fg}" fill-opacity="0.2" stroke="${fg}" stroke-opacity="0.9" stroke-width="1.5"/>`,
+        `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${radius.toFixed(2)}" fill="${fg}" fill-opacity="0.2" stroke="${fg}" stroke-opacity="0.9" stroke-width="${(1.5 * k).toFixed(2)}"/>`,
         iconAt(opts.icon, cx, cy, iconSize, fg, 1),
       );
     } else {
       parts.push(
-        `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${radius.toFixed(2)}" fill="none" stroke="${fg}" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="3 3"/>`,
+        `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${radius.toFixed(2)}" fill="none" stroke="${fg}" stroke-opacity="0.4" stroke-width="${(1.2 * k).toFixed(2)}" stroke-dasharray="${(3 * k).toFixed(2)} ${(3 * k).toFixed(2)}"/>`,
         iconAt(opts.icon, cx, cy, iconSize, fg, 0.3),
       );
     }
@@ -81,6 +94,7 @@ export function stripSvg(opts: StripOptions, scale: Scale): string {
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width} ${height}">` +
+    (background ? `<rect width="${width}" height="${height}" fill="${toHex(background)}"/>` : "") +
     parts.join("") +
     `</svg>`
   );
@@ -102,4 +116,26 @@ export function renderPassIcon(opts: IconOptions, scale: Scale): Promise<Buffer>
     iconAt(opts.icon, size / 2, size / 2, size * 0.6, toHex(opts.foreground), 1) +
     `</svg>`;
   return sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
+}
+
+/** Grand visuel d'une carte Google : les tampons sur un fond uni de la couleur du commerce. */
+export function renderHero(opts: StripOptions & { background: Rgb }): Promise<Buffer> {
+  return sharp(Buffer.from(stripSvg(opts, 1, HERO_SIZE, opts.background)))
+    .flatten({ background: toHex(opts.background) }) // aucun pixel transparent
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
+/**
+ * Logo du programme pour Google (carré 660 × 660, que Google découpe en rond avec 15 % de marge) : l'icône
+ * du tampon sur la couleur du commerce, bien à l'intérieur de la zone visible.
+ */
+export function renderProgramLogo(opts: IconOptions): Promise<Buffer> {
+  const size = PROGRAM_LOGO_SIZE;
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+    `<rect width="${size}" height="${size}" fill="${toHex(opts.background)}"/>` +
+    iconAt(opts.icon, size / 2, size / 2, size * 0.42, toHex(opts.foreground), 1) +
+    `</svg>`;
+  return sharp(Buffer.from(svg)).flatten({ background: toHex(opts.background) }).png({ compressionLevel: 9 }).toBuffer();
 }

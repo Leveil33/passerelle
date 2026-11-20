@@ -14,7 +14,7 @@ installable (PWA) pour que les commerçants scannent les cartes de leurs clients
 | 0 | Mise en place (Next.js, Supabase, Tailwind, `.env.example`) | ✅ fait (connexion vérifiée ; test de la clé secrète à refaire une fois la variable ajoutée) |
 | 1 | Base de données et logique métier | ✅ fait, en attente de validation |
 | 2 | Carte Apple Wallet | code terminé et testé ; **reste le test sur un vrai iPhone** (voir [le guide](./docs/guide-apple-vercel.md)) |
-| 3 | Carte Google Wallet | à faire |
+| 3 | Carte Google Wallet | code terminé et testé ; **reste le test sur un vrai Android** (voir [le guide](./docs/guide-google-wallet.md)) |
 | 4 | PWA commerçant | à faire |
 | 5 | Administration | à faire |
 | 6 | Finitions et mise en ligne | à faire |
@@ -110,6 +110,19 @@ comme modifiées, automatiquement, par des déclencheurs de la base.
 
 **Guide pour toi (comptes Apple et Vercel, certificats) :** [`docs/guide-apple-vercel.md`](./docs/guide-apple-vercel.md).
 
+## Google Wallet (Phase 3)
+
+| Adresse | Rôle |
+|---|---|
+| `GET /api/cards/{série}/google` | crée la carte chez Google puis redirige vers le lien « Ajouter à Google Wallet » |
+| `GET /api/cards/{série}/hero/{n}.png` | image des tampons (n tampons), téléchargée par Google |
+| `GET /api/programs/{programme}/logo.png` | logo dessiné du programme (si le commerçant n'a pas importé le sien) |
+
+Chaque **programme** est une « classe » chez Google (nom, logo, couleur, adresses) et chaque **carte** un
+« objet ». Après un tampon, `notifyGoogleCardUpdated` met la carte à jour et, si le budget le permet, envoie un
+message avec notification (3 par 24 h et par carte au maximum chez Google ; une place est gardée pour la
+récompense). **Guide pour toi (comptes Google) :** [`docs/guide-google-wallet.md`](./docs/guide-google-wallet.md).
+
 ## Tests
 
 ```bash
@@ -123,6 +136,9 @@ npm test
 - `src/lib/stamps/`, `src/lib/wallet/` : dessin des tampons, couleurs lisibles, dates.
 - `tests/wallet-*.test.ts`, `tests/apple-push.test.ts` : fabrication et signature de la carte (vérifiée
   par openssl), adresses d'Apple de bout en bout, envoi du signal vers un faux serveur Apple.
+
+Les tests Google s'exécutent contre un **faux serveur Google** (`tests/helpers/fake-google.ts`) qui vérifie la
+signature du compte de service, refuse les doublons, impose la limite de 10 messages et simule des pannes.
 
 Les tests Apple utilisent de **faux certificats** fabriqués à la volée : ils prouvent que la carte est bien
 construite et signée, pas qu'Apple l'accepte. Cela ne se vérifie que sur un vrai iPhone.
@@ -147,7 +163,8 @@ src/app/                 pages et routes API (Next.js, App Router)
 src/app/api/health/      contrôle de la connexion Supabase
 src/lib/loyalty/         signature des QR codes (HMAC) et messages d'erreur des tampons
 src/lib/apple/           carte Apple Wallet : fabrication, service Web, signal vers les iPhone
-src/lib/stamps/          icônes de tampon et dessin du bandeau de la carte
+src/lib/google/          carte Google Wallet : classe, carte, lien « Ajouter », mises à jour
+src/lib/stamps/          icônes de tampon et dessin des images (bandeau Apple, visuel et logo Google)
 src/lib/wallet/          accès aux données du Wallet, couleurs, dates, outils communs
 supabase/migrations/     le SQL de la base (tables, sécurité, fonctions de tampon)
 tests/db/                tests de la base et de sa sécurité

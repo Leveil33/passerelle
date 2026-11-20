@@ -273,3 +273,26 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
     = nom du commerce) et tampon importé (`stamp_icon = 'custom'`, aujourd'hui l'étoile par défaut) ; ils
     exigent l'envoi de fichiers contrôlés par le serveur.
   - `POST /api/dev/push` est un outil de test provisoire (secret `DEV_TOOLS_TOKEN`) : à supprimer en Phase 4.
+- **Phase 3 (Google) — choix de conception** :
+  - Adresses dans `merchantLocations` sur la **classe** (le champ `locations` est obsolète chez Google et ne
+    déclenche plus de notification de proximité). Une classe par programme (`<issuer>.<programId>`), un objet par
+    carte (`<issuer>.<série>`). Google choisit seul la distance et le texte de proximité (pas de personnalisation).
+  - Lien « Ajouter » : la classe et la carte sont créées par l'API REST, puis le lien est un JWT RS256 qui ne
+    désigne que la carte (`payload.loyaltyObjects`), redirection 302. `cards.platform` passe à `google`/`both` à la
+    création du lien (Google n'envoie aucun retour quand le client enregistre vraiment la carte).
+  - Notifications : budget par carte en base (`google_claim_notification`) — Google limite à 3 messages avec
+    notification par 24 h ; au plus 2 pour des tampons, la 3e est réservée à « récompense disponible ». La carte est
+    toujours mise à jour, même sans notification. Seuls les tampons notifient (pas récompense validée, ni annulation).
+    Un échec de Google ne doit jamais faire échouer un tampon (`notifyGoogleCardUpdated` ne lève jamais d'erreur).
+  - Authentification du compte de service écrite à la main (`src/lib/google/auth.ts`, flux JWT bearer, RS256) au
+    lieu de `google-auth-library` prévu au cahier des charges : quelques lignes de crypto standard, testables
+    contre un faux serveur Google, une dépendance de moins.
+  - Images : le visuel des tampons et le logo sont fabriqués par le serveur et téléchargés par Google ; leur adresse
+    contient une empreinte de l'apparence (couleur, icône, cases) pour vider le cache de Google à chaque changement.
+  - **À vérifier au premier essai réel** (non confirmé par la documentation lue) : adresse de base de l'API
+    (`walletobjects.googleapis.com/walletobjects/v1`) et portée (`wallet_object.issuer`), écrites de mémoire ;
+    valeur `UNDER_REVIEW` de `reviewStatus` ; effacement des anciens messages (`messages: []`) quand la carte en
+    contient 10 ; casse de `messageType: "TEXT_AND_NOTIFY"`.
+  - Pas encore fait (Phase 5) : mise à jour en masse des cartes existantes quand le commerçant change l'apparence
+    (`syncClass` existe pour la classe ; les cartes gardent l'ancienne image jusqu'à leur prochain tampon), logo
+    importé, tampon importé.

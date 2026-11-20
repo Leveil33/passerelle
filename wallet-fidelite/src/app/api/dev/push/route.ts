@@ -1,9 +1,11 @@
 // OUTIL DE TEST PROVISOIRE (à supprimer en Phase 4, quand le scan commerçant enverra lui-même ce signal).
-// POST /api/dev/push  { "serial": "…" }  avec  Authorization: Bearer <DEV_TOOLS_TOKEN>
+// POST /api/dev/push  { "serial": "…" }   (Apple ET Google : chacun est ignoré s'il n'est pas configuré)  avec  Authorization: Bearer <DEV_TOOLS_TOKEN>
 // Désactivé (404) tant que la variable DEV_TOOLS_TOKEN n'existe pas.
 import { getAppleConfig } from "@/lib/apple/config";
 import { getWalletStore } from "@/lib/apple/deps";
 import { notifyCardUpdated } from "@/lib/apple/notify";
+import { getGoogleDeps } from "@/lib/google/deps";
+import { notifyGoogleCardUpdated } from "@/lib/google/service";
 import { json, readJson, safeEqual } from "@/lib/wallet/http";
 
 export async function POST(req: Request) {
@@ -16,15 +18,21 @@ export async function POST(req: Request) {
   const serial = body && typeof body === "object" ? (body as { serial?: unknown }).serial : undefined;
   if (typeof serial !== "string" || !/^[0-9a-f]{32}$/.test(serial)) return json({ error: "serial invalide." }, 400);
 
+  const store = getWalletStore();
+  const result: { apple?: unknown; google?: unknown } = {};
   try {
-    const summary = await notifyCardUpdated(serial, {
-      store: getWalletStore(),
+    result.apple = await notifyCardUpdated(serial, {
+      store,
       config: getAppleConfig(),
       host: process.env.APPLE_APNS_HOST || undefined,
     });
-    return json(summary);
   } catch (e) {
-    console.error("Envoi du signal impossible :", (e as Error).message);
-    return json({ error: "Envoi impossible." }, 500);
+    result.apple = { error: (e as Error).message };
   }
+  try {
+    result.google = await notifyGoogleCardUpdated(serial, "stamp", getGoogleDeps());
+  } catch (e) {
+    result.google = { error: (e as Error).message };
+  }
+  return json(result);
 }

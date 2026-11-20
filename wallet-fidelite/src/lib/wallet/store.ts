@@ -2,7 +2,7 @@
 // serveur) déjà testées dans tests/db. Toute la logique est dans la base ; ici, uniquement le transport.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizeTimestamp } from "./timestamps";
-import { parsePassData, type PassData } from "./types";
+import { parseClassData, parsePassData, type ClassData, type PassData } from "./types";
 
 export type RegisterResult = "created" | "exists" | "unauthorized" | "not_found" | "invalid";
 export type UnregisterResult = "ok" | "unauthorized" | "not_found";
@@ -26,6 +26,11 @@ export interface WalletStore {
   pushTargets(serial: string): Promise<{ deviceLibraryId: string; pushToken: string }[]>;
   forgetPushToken(pushToken: string): Promise<number>;
   createCard(input: CreateCardInput): Promise<{ cardId: string; serialNumber: string }>;
+  /** Description d'un programme pour Google, ou null s'il n'existe pas. */
+  classData(programId: string): Promise<ClassData | null>;
+  /** Budget de notifications Google : true = autorisée (et comptée). */
+  claimNotification(serial: string, kind: "stamp" | "reward"): Promise<boolean>;
+  markGoogle(serial: string, objectId: string): Promise<"ok" | "not_found" | "invalid" | "conflict">;
 }
 
 /** Refus renvoyé par la base (message = code lisible par le programme, ex. « program_inactive »). */
@@ -101,5 +106,15 @@ export function createSupabaseWalletStore(client: Rpc): WalletStore {
       });
       return { cardId: data.card_id, serialNumber: data.serial_number };
     },
+
+    async classData(programId) {
+      const data = await call<unknown>("loyalty_class_data", { p_program_id: programId });
+      return data === null || data === undefined ? null : parseClassData(data);
+    },
+
+    claimNotification: (serial, kind) => call<boolean>("google_claim_notification", { p_serial: serial, p_kind: kind }),
+
+    markGoogle: (serial, objectId) =>
+      call<"ok" | "not_found" | "invalid" | "conflict">("google_mark_card", { p_serial: serial, p_object_id: objectId }),
   };
 }

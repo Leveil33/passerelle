@@ -3,7 +3,7 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { StoreError, type WalletStore } from "@/lib/wallet/store";
 import { normalizeTimestamp } from "@/lib/wallet/timestamps";
-import { parsePassData } from "@/lib/wallet/types";
+import { parseClassData, parsePassData } from "@/lib/wallet/types";
 import { asServer } from "../db/helpers";
 
 export function createPgliteWalletStore(db: PGlite): WalletStore {
@@ -56,5 +56,14 @@ export function createPgliteWalletStore(db: PGlite): WalletStore {
       ]);
       return { cardId: data.card_id, serialNumber: data.serial_number };
     },
+
+    async classData(programId) {
+      const raw = await scalar<unknown>("select public.loyalty_class_data($1)", [programId]);
+      return raw ? parseClassData(raw) : null;
+    },
+
+    claimNotification: (serial, kind) => scalar<boolean>("select public.google_claim_notification($1, $2)", [serial, kind]),
+
+    markGoogle: (serial, objectId) => scalar("select public.google_mark_card($1, $2)", [serial, objectId]),
   };
 }

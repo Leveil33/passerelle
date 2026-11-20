@@ -85,3 +85,17 @@ export function parsePassData(value: unknown): PassData {
     }),
   };
 }
+
+/** Description d'un programme pour Google (public.loyalty_class_data) : aucune donnée de client ni de secret. */
+export type ClassData = Pick<PassData, "program" | "merchant" | "locations">;
+
+export function parseClassData(value: unknown): ClassData {
+  // Réutilise la lecture des données de carte en lui fournissant une carte factice.
+  const root = obj(value, "racine");
+  const dummyCard = {
+    card: { id: "-", serial_number: "-", auth_token: "-", stamps: 0, rewards_earned: 0, platform: null, updated_at: "-" },
+    customer: { first_name: "-" },
+  };
+  const { program, merchant, locations } = parsePassData({ ...root, ...dummyCard });
+  return { program, merchant, locations };
+}
