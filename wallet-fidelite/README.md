@@ -4,8 +4,8 @@ Cartes de fidélité à tampons dans **Apple Wallet** et **Google Wallet**, avec
 installable (PWA) pour que les commerçants scannent les cartes de leurs clients.
 
 > Le cahier des charges complet est dans [`CLAUDE.md`](./CLAUDE.md).
-> Ce projet vit dans le dossier `wallet-fidelite/` du dépôt ; le reste du dépôt (le jeu Passerelle,
-> publié par Netlify depuis `site/`) n'est pas concerné.
+> Ce projet vit dans le dossier `wallet-fidelite/` du dépôt. Le jeu Passerelle qui s'y trouvait a été
+> supprimé du dépôt ; il reste consultable dans l'historique Git (dernier commit qui le contient : `3a967f0`).
 
 ## Où on en est
 
