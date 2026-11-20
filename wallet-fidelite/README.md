@@ -66,7 +66,7 @@ Tout est décrit dans `supabase/migrations/` (`…_loyalty_schema.sql`, puis `�
 | `merchants`, `merchant_users` | commerces, et leurs membres (`owner` ou `staff`) |
 | `loyalty_programs` | programme : cases, récompense, message de proximité, délai anti double scan, tampon (`stamp_icon`, `stamp_icon_url`) |
 | `locations` | adresses du commerce (latitude / longitude) |
-| `customers`, `cards` | clients et leurs cartes (numéro de série, secret Apple, tampons) |
+| `customers`, `cards` | clients (prénom, e-mail optionnel, consentements) et leurs cartes (numéro de série, secret Apple, tampons) |
 | `stamp_events` | journal de tous les changements de tampons |
 | `apple_registrations` | appareils Apple qui suivent une carte (serveur uniquement) |
 

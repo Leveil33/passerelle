@@ -226,3 +226,15 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
   `merchants.logo_url` et `loyalty_programs.stamp_icon_url` n'ont aucun droit d'écriture pour
   `authenticated`.
 - **Création de commerces** : côté serveur uniquement (pas d'inscription libre en V1).
+- **Messages du commerçant à ses clients (décision : option 2)** : l'envoi reste hors V1 (§10) mais il est
+  prévu après. La préparation est faite : `customers.marketing_consent_at` (vide = pas de consentement),
+  lisible et modifiable par le serveur uniquement. À respecter dans les phases suivantes :
+  - la page `/join` (§5.1) comporte une case **distincte**, **jamais cochée d'avance** : « J'accepte de
+    recevoir des offres de ce commerçant sur ma carte », indépendante de l'e-mail ; `POST /api/cards`
+    enregistre la date si elle est cochée ;
+  - aucun message ne part vers un client sans consentement, et le client doit pouvoir le retirer
+    (moyen à prévoir avant l'envoi) ;
+  - à l'envoi (après V1) : limite d'envois par programme (Google limite les notifications par jour),
+    journal des messages envoyés, textes courts, aperçu avant envoi.
+- **Jeu Passerelle retiré partout** : fichiers (commit `491f549`), base Supabase (`drop_passerelle_game`) et
+  page publiée sur claude.ai (supprimée le 2026-11-20). Le site Netlify est à supprimer par la propriétaire.
