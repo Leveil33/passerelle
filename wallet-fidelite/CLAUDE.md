@@ -313,3 +313,14 @@ Préviens-moi au bon moment et explique-moi chaque étape simplement :
   - `NEXT_PUBLIC_*` est figé à la construction (le test navigateur construit lui-même l'appli avec ses réglages).
   - **À vérifier au premier essai réel** : connexion avec un vrai compte Supabase ; lecture caméra sur de vrais
     téléphones (iPhone : PWA installée) ; formes de requêtes PostgREST (lectures simples, une table à la fois).
+- **Offre commerciale (décision de la propriétaire, mise en œuvre prévue en Phase 7 « paiement », après les Phases 5 et 6)** :
+  - Deux formules aux mêmes services (cartes, clients, employés illimités ; Apple et Google ; appli de scan ; statistiques) :
+    **mensuel 29 € HT / mois**, sans engagement ; **annuel 290 € HT / an**, payé d'avance, 12 mois d'engagement
+    (2 mois offerts). Prix proposés par Claude comme point de départ : **à confirmer** par la propriétaire.
+  - **Rien de gratuit** : pas d'essai gratuit, pas de réduction de lancement. Un commerce n'est actif qu'une fois le
+    premier paiement reçu (activation par webhook Stripe).
+  - Prévu avec Stripe (Checkout, prélèvement SEPA, factures, page « Gérer mon abonnement »). Abonnement impayé ou
+    terminé : plus de tampon ni de création de carte après un court délai de grâce, mais les cartes déjà dans les
+    Wallets restent. Offre annuelle résiliée : accès jusqu'à la fin des 12 mois payés.
+  - À prévoir : un indicateur « compte offert / interne » modifiable par la propriétaire seule, pour ses commerces de test.
+  - Exige une entreprise déclarée (facturation, TVA, compte Stripe) ; faire relire les conditions générales de vente.
