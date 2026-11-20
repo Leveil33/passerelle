@@ -1,5 +1,6 @@
 // Fabrication de la carte Apple Wallet (.pkpass) d'un client.
 import { PKPass } from "passkit-generator";
+import sharp from "sharp";
 import { signQrPayload } from "@/lib/loyalty/qr";
 import { renderPassIcon, renderStrip, type Scale } from "@/lib/stamps/render";
 import { cardColors, toRgbCss } from "@/lib/wallet/colors";
@@ -66,11 +67,18 @@ export function passFields(data: PassData) {
   };
 }
 
+/** Logo d'Apple : 160 × 50 points au maximum (×2 et ×3 pour les écrans Retina). */
+async function logoPng(source: Buffer, scale: Scale): Promise<Buffer> {
+  return sharp(source).resize({ width: 160 * scale, height: 50 * scale, fit: "inside" }).png({ compressionLevel: 9 }).toBuffer();
+}
+
 export async function buildPkPass(
   data: PassData,
-  ctx: { config: AppleConfig; qrSecret: string },
+  ctx: { config: AppleConfig; qrSecret: string; assets?: { logo?: Buffer | null; stamp?: Buffer | null } },
 ): Promise<Buffer> {
   const { config, qrSecret } = ctx;
+  const logo = ctx.assets?.logo ?? undefined;
+  const customIcon = data.program.stamp_icon === "custom" ? (ctx.assets?.stamp ?? undefined) : undefined;
   const colors = cardColors(data.merchant.brand_color);
   const fields = passFields(data);
 
@@ -81,7 +89,8 @@ export async function buildPkPass(
     serialNumber: data.card.serial_number,
     organizationName: data.merchant.name || config.organizationName,
     description: `${data.program.name} — ${data.merchant.name}`,
-    logoText: data.merchant.name,
+    // Avec un logo, le nom du commerce est dans l'image ; sinon on l'écrit en texte.
+    ...(logo ? {} : { logoText: data.merchant.name }),
     backgroundColor: toRgbCss(colors.background),
     foregroundColor: toRgbCss(colors.foreground),
     labelColor: toRgbCss(colors.label),
@@ -115,11 +124,12 @@ export async function buildPkPass(
 
   const icon = data.program.stamp_icon;
   for (const scale of SCALES) {
-    pass.addBuffer(`icon${suffix(scale)}.png`, await renderPassIcon({ background: colors.background, foreground: colors.foreground, icon }, scale));
+    if (logo) pass.addBuffer(`logo${suffix(scale)}.png`, await logoPng(logo, scale));
+    pass.addBuffer(`icon${suffix(scale)}.png`, await renderPassIcon({ background: colors.background, foreground: colors.foreground, icon, customIcon }, scale));
     pass.addBuffer(
       `strip${suffix(scale)}.png`,
       await renderStrip(
-        { stampsRequired: data.program.stamps_required, stamps: data.card.stamps, foreground: colors.foreground, icon },
+        { stampsRequired: data.program.stamps_required, stamps: data.card.stamps, foreground: colors.foreground, icon, customIcon },
         scale,
       ),
     );

@@ -29,6 +29,8 @@ export const DEFAULT_LIMITS: RateLimits = { device: 60, pass: 60, log: 30, creat
 /** Ce dont a besoin une adresse qui ne touche pas à Apple (création de carte, journaux). */
 export type StoreDeps = {
   store: WalletStore;
+  /** Télécharge une image du commerçant (logo, tampon) depuis notre dossier d'images ; null si indisponible. */
+  loadAsset?: (url: string | null | undefined) => Promise<Buffer | null>;
   limits?: Partial<RateLimits>;
   log?: (message: string, meta?: unknown) => void;
 };

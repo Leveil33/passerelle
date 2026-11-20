@@ -31,6 +31,10 @@ export interface WalletStore {
   /** Budget de notifications Google : true = autorisée (et comptée). */
   claimNotification(serial: string, kind: "stamp" | "reward"): Promise<boolean>;
   markGoogle(serial: string, objectId: string): Promise<"ok" | "not_found" | "invalid" | "conflict">;
+  /** Jetons de notification Apple de toutes les cartes d'un programme. */
+  programPushTokens(programId: string, limit: number): Promise<string[]>;
+  /** Numéros de série des cartes Google d'un programme. */
+  programGoogleSerials(programId: string, limit: number): Promise<string[]>;
 }
 
 /** Refus renvoyé par la base (message = code lisible par le programme, ex. « program_inactive »). */
@@ -116,5 +120,15 @@ export function createSupabaseWalletStore(client: Rpc): WalletStore {
 
     markGoogle: (serial, objectId) =>
       call<"ok" | "not_found" | "invalid" | "conflict">("google_mark_card", { p_serial: serial, p_object_id: objectId }),
+
+    async programPushTokens(programId, limit) {
+      const rows = await call<{ push_token: string }[]>("program_push_targets", { p_program_id: programId, p_limit: limit });
+      return (rows ?? []).map((r) => r.push_token);
+    },
+
+    async programGoogleSerials(programId, limit) {
+      const rows = await call<{ serial_number: string }[]>("program_google_serials", { p_program_id: programId, p_limit: limit });
+      return (rows ?? []).map((r) => r.serial_number);
+    },
   };
 }

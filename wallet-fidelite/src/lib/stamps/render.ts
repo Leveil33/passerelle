@@ -40,8 +40,15 @@ function iconMarkup(key: string): string {
   return STAMP_ICONS[isStampIconKey(key) ? key : DEFAULT_STAMP_ICON];
 }
 
-/** Une icône (grille 24 × 24) centrée en (cx, cy), à la taille `size`. */
-function iconAt(key: string, cx: number, cy: number, size: number, color: string, opacity: number): string {
+/** Image importée par le commerçant, définie UNE fois puis réutilisée pour chaque case (le fichier SVG reste léger). */
+const customDefs = (png: Buffer) =>
+  `<defs><image id="tampon" width="1" height="1" preserveAspectRatio="xMidYMid meet" xlink:href="data:image/png;base64,${png.toString("base64")}"/></defs>`;
+
+/** Une icône (grille 24 × 24) centrée en (cx, cy), à la taille `size`. Avec `custom` : l'image importée à la place. */
+function iconAt(key: string, cx: number, cy: number, size: number, color: string, opacity: number, custom?: Buffer): string {
+  if (custom) {
+    return `<use xlink:href="#tampon" x="0" y="0" opacity="${opacity}" transform="translate(${(cx - size / 2).toFixed(2)} ${(cy - size / 2).toFixed(2)}) scale(${size.toFixed(2)})"/>`;
+  }
   const s = (size / 24).toFixed(4);
   return (
     `<g transform="translate(${(cx - size / 2).toFixed(2)} ${(cy - size / 2).toFixed(2)}) scale(${s})" ` +
@@ -55,6 +62,8 @@ export type StripOptions = {
   stamps: number;
   foreground: Rgb;
   icon: string;
+  /** Image importée par le commerçant (PNG), utilisée à la place de l'icône de la bibliothèque. */
+  customIcon?: Buffer;
 };
 
 export function stripSvg(
@@ -82,18 +91,19 @@ export function stripSvg(
     if (i < filled) {
       parts.push(
         `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${radius.toFixed(2)}" fill="${fg}" fill-opacity="0.2" stroke="${fg}" stroke-opacity="0.9" stroke-width="${(1.5 * k).toFixed(2)}"/>`,
-        iconAt(opts.icon, cx, cy, iconSize, fg, 1),
+        iconAt(opts.icon, cx, cy, iconSize, fg, 1, opts.customIcon),
       );
     } else {
       parts.push(
         `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${radius.toFixed(2)}" fill="none" stroke="${fg}" stroke-opacity="0.4" stroke-width="${(1.2 * k).toFixed(2)}" stroke-dasharray="${(3 * k).toFixed(2)} ${(3 * k).toFixed(2)}"/>`,
-        iconAt(opts.icon, cx, cy, iconSize, fg, 0.3),
+        iconAt(opts.icon, cx, cy, iconSize, fg, 0.3, opts.customIcon),
       );
     }
   }
 
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width} ${height}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width} ${height}">` +
+    (opts.customIcon ? customDefs(opts.customIcon) : "") +
     (background ? `<rect width="${width}" height="${height}" fill="${toHex(background)}"/>` : "") +
     parts.join("") +
     `</svg>`
@@ -105,15 +115,16 @@ export function renderStrip(opts: StripOptions, scale: Scale): Promise<Buffer> {
   return sharp(Buffer.from(stripSvg(opts, scale))).png({ compressionLevel: 9 }).toBuffer();
 }
 
-export type IconOptions = { background: Rgb; foreground: Rgb; icon: string };
+export type IconOptions = { background: Rgb; foreground: Rgb; icon: string; customIcon?: Buffer };
 
 /** Icône de la carte (29 × 29 points) : l'icône du tampon sur la couleur du commerce. */
 export function renderPassIcon(opts: IconOptions, scale: Scale): Promise<Buffer> {
   const size = 29;
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size * scale}" height="${size * scale}" viewBox="0 0 ${size} ${size}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size * scale}" height="${size * scale}" viewBox="0 0 ${size} ${size}">` +
+    (opts.customIcon ? customDefs(opts.customIcon) : "") +
     `<rect width="${size}" height="${size}" fill="${toHex(opts.background)}"/>` +
-    iconAt(opts.icon, size / 2, size / 2, size * 0.6, toHex(opts.foreground), 1) +
+    iconAt(opts.icon, size / 2, size / 2, size * 0.6, toHex(opts.foreground), 1, opts.customIcon) +
     `</svg>`;
   return sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
 }
@@ -133,9 +144,10 @@ export function renderHero(opts: StripOptions & { background: Rgb }): Promise<Bu
 export function renderProgramLogo(opts: IconOptions): Promise<Buffer> {
   const size = PROGRAM_LOGO_SIZE;
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+    (opts.customIcon ? customDefs(opts.customIcon) : "") +
     `<rect width="${size}" height="${size}" fill="${toHex(opts.background)}"/>` +
-    iconAt(opts.icon, size / 2, size / 2, size * 0.42, toHex(opts.foreground), 1) +
+    iconAt(opts.icon, size / 2, size / 2, size * 0.42, toHex(opts.foreground), 1, opts.customIcon) +
     `</svg>`;
   return sharp(Buffer.from(svg)).flatten({ background: toHex(opts.background) }).png({ compressionLevel: 9 }).toBuffer();
 }

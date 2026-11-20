@@ -55,6 +55,7 @@ export async function handleHeroImage(req: Request, p: { serial: string; file: s
   if (!data) return notFound();
   const colors = cardColors(data.merchant.brand_color);
   const icon = isStampIconKey(data.program.stamp_icon) ? data.program.stamp_icon : DEFAULT_STAMP_ICON;
+  const customIcon = data.program.stamp_icon === "custom" ? ((await deps.loadAsset?.(data.program.stamp_icon_url)) ?? undefined) : undefined;
   return png(
     await renderHero({
       stampsRequired: data.program.stamps_required,
@@ -62,6 +63,7 @@ export async function handleHeroImage(req: Request, p: { serial: string; file: s
       foreground: colors.foreground,
       background: colors.background,
       icon,
+      customIcon,
     }),
   );
 }
@@ -76,5 +78,6 @@ export async function handleLogoImage(req: Request, p: { programId: string }, de
   if (!data) return notFound();
   const colors = cardColors(data.merchant.brand_color);
   const icon = isStampIconKey(data.program.stamp_icon) ? data.program.stamp_icon : DEFAULT_STAMP_ICON;
-  return png(await renderProgramLogo({ background: colors.background, foreground: colors.foreground, icon }));
+  const customIcon = data.program.stamp_icon === "custom" ? ((await deps.loadAsset?.(data.program.stamp_icon_url)) ?? undefined) : undefined;
+  return png(await renderProgramLogo({ background: colors.background, foreground: colors.foreground, icon, customIcon }));
 }

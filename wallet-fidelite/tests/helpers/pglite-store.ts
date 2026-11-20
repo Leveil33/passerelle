@@ -65,5 +65,13 @@ export function createPgliteWalletStore(db: PGlite): WalletStore {
     claimNotification: (serial, kind) => scalar<boolean>("select public.google_claim_notification($1, $2)", [serial, kind]),
 
     markGoogle: (serial, objectId) => scalar("select public.google_mark_card($1, $2)", [serial, objectId]),
+
+    async programPushTokens(programId, limit) {
+      return (await query<{ push_token: string }>("select * from public.program_push_targets($1, $2)", [programId, limit])).map((r) => r.push_token);
+    },
+
+    async programGoogleSerials(programId, limit) {
+      return (await query<{ serial_number: string }>("select * from public.program_google_serials($1, $2)", [programId, limit])).map((r) => r.serial_number);
+    },
   };
 }

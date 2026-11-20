@@ -1,6 +1,6 @@
 // Branchement de Google Wallet sur la vraie configuration (côté serveur uniquement).
 import "server-only";
-import { getWalletStore } from "@/lib/apple/deps";
+import { getAssetLoader, getWalletStore } from "@/lib/apple/deps";
 import type { StoreDeps } from "@/lib/apple/web-service";
 import { getQrSecret } from "@/lib/loyalty/qr";
 import { json } from "@/lib/wallet/http";
@@ -31,7 +31,7 @@ export async function withGoogleDeps(run: (deps: StoreDeps & { google: GoogleDep
   let deps: StoreDeps & { google: GoogleDeps };
   try {
     const google = getGoogleDeps();
-    deps = { store: google.store, google };
+    deps = { store: google.store, google, loadAsset: getAssetLoader() };
   } catch (e) {
     console.error("Configuration de Google Wallet incomplète :", (e as Error).message);
     return json({ error: "Service momentanément indisponible." }, 503);

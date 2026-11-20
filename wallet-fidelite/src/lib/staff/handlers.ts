@@ -57,10 +57,7 @@ const logger = (deps: StaffDeps) => deps.log ?? ((m: string, meta?: unknown) => 
  * Protections des adresses qui modifient des données avec le cookie de session :
  * contenu JSON obligatoire et requête venant de notre propre site (contre les requêtes forgées depuis un autre site).
  */
-export function guardPost(req: Request): Response | null {
-  if (!(req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json")) {
-    return fail(415, "bad_content_type", "Requête invalide.");
-  }
+export function guardOrigin(req: Request): Response | null {
   const origin = req.headers.get("origin");
   if (origin) {
     const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? new URL(req.url).host;
@@ -73,6 +70,13 @@ export function guardPost(req: Request): Response | null {
     if (originHost !== host) return fail(403, "bad_origin", "Requête refusée.");
   }
   return null;
+}
+
+export function guardPost(req: Request): Response | null {
+  if (!(req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json")) {
+    return fail(415, "bad_content_type", "Requête invalide.");
+  }
+  return guardOrigin(req);
 }
 
 /** Fabrique l'état d'une carte tel que l'affiche l'appli (une carte que l'employé a le droit de voir). */
